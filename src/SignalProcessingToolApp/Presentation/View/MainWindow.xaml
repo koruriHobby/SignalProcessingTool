@@ -1,0 +1,144 @@
+﻿<Window x:Class="SignalProcessingTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+        Title="正弦波プロットアプリケーション" Height="700" Width="1000">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,6,20,6"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左列：入力パラメータ -->
+        <StackPanel Grid.Column="0" Margin="10" VerticalAlignment="Top">
+            <TextBlock Text="入力パラメータ" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+
+            <!-- サンプリング周波数 -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="サンプリング周波数 [Hz]："/>
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          ItemsSource="{Binding SamplingRates}"
+                          SelectedIndex="{Binding SamplingRateIndex}"
+                          IsEnabled="{Binding IsParametersEnabled}"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="フレームサイズ [Sample]："/>
+                <ComboBox Grid.Row="1" Grid.Column="1"
+                          ItemsSource="{Binding DataAndFrameSizes}"
+                          SelectedIndex="{Binding FrameSizeIndex}"
+                          IsEnabled="{Binding IsParametersEnabled}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="データサイズ [Sample]："/>
+                <ComboBox Grid.Row="2" Grid.Column="1"
+                          ItemsSource="{Binding DataAndFrameSizes}"
+                          SelectedIndex="{Binding DataSizeIndex}"
+                          IsEnabled="{Binding IsParametersEnabled}"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="正弦波周波数 [Hz]："/>
+                <TextBox Grid.Row="3" Grid.Column="1"
+                         Text="{Binding FrequencyInput, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsParametersEnabled}"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="ゲイン[dB]："/>
+                <ComboBox Grid.Row="4" Grid.Column="1"
+                          ItemsSource="{Binding GainLabels}"
+                          SelectedIndex="{Binding GainIndex}"
+                          IsEnabled="{Binding IsParametersEnabled}"/>
+            </Grid>
+
+            <!-- ステータス -->
+            <TextBlock Text="ステータス" FontSize="12" Margin="0,20,0,5"/>
+            <TextBlock Text="{Binding StatusMessage}" 
+                       TextWrapping="Wrap"
+                       Background="#F0F0F0"
+                       Padding="10"
+                       Height="60"
+                       VerticalAlignment="Top"/>
+        </StackPanel>
+
+        <!-- 右列：ボタンと波形表示 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ボタングループ -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" VerticalAlignment="Top" Height="Auto">
+                <Button Content="リセット"
+                        Command="{Binding ResetCommand}"
+                        Width="100"
+                        ToolTip="プロットをリセット"/>
+                <Button Content="一括処理"
+                        Command="{Binding BatchProcessCommand}"
+                        Width="100"
+                        ToolTip="データサイズ分を一括生成"/>
+                <Button Content="フレーム処理"
+                        Command="{Binding FrameProcessCommand}"
+                        Width="100"
+                        ToolTip="フレームサイズ分ずつ生成"/>
+            </StackPanel>
+
+            <!-- 波形プロット表示セクション（2行1列） -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        BorderBrush="Black"
+                        BorderThickness="1"
+                        Background="White"
+                        Margin="10,10,10,5">
+                    <scottplot:WpfPlot x:Name="waveformPlot"/>
+                </Border>
+
+                <Border Grid.Row="1"
+                        BorderBrush="Black"
+                        BorderThickness="1"
+                        Background="White"
+                        Margin="10,5,10,10">
+                    <scottplot:WpfPlot x:Name="gainedWaveformPlot"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+
