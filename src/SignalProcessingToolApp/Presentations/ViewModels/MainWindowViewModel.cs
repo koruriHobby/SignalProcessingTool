@@ -36,10 +36,16 @@ public partial class MainWindowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsBatchProcessEnabled))]
     [NotifyCanExecuteChangedFor(nameof(BatchProcessCommand))]
     [NotifyCanExecuteChangedFor(nameof(FrameProcessCommand))]
+    [NotifyPropertyChangedFor(nameof(StatusMessage))]
     private AppState _currentState = AppState.Initial;
 
-    [ObservableProperty]
-    private string _statusMessage = "準備完了";
+    public string StatusMessage => CurrentState switch
+    {
+        AppState.Initial => "準備完了",
+        AppState.Completed => "処理完了",
+        AppState.FrameProcessing => "フレーム処理中",
+        _ => "準備完了"
+    };
 
     public bool IsParametersEnabled => CurrentState == AppState.Initial || CurrentState == AppState.Completed;
     public bool IsBatchProcessEnabled => CurrentState != AppState.FrameProcessing;
@@ -62,11 +68,9 @@ public partial class MainWindowViewModel : ObservableObject
             PlotVm.Clear();
             _accumulatedInputWaveform = null;
             _accumulatedProcessedWaveform = null;
-            StatusMessage = "準備完了";
         }
         catch
         {
-            StatusMessage = "準備完了";
             CurrentState = AppState.Initial;
         }
     }
@@ -76,14 +80,16 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
+            //パラメータ生成
             var commonParam = CommonParamVm.CreateParameter();
             var sineParam = WaveformVm.CreateSineWaveParameter(commonParam.SamplingFrequency);
             var processingConfig = SignalConfigVm.CreateConfig();
 
-            int dataSize = commonParam.DataSize;
-            var inputBuffer = new double[dataSize];
-            var processedBuffer = new double[dataSize];
+            //配列生成
+            var inputBuffer = new double[commonParam.DataSize];
+            var processedBuffer = new double[commonParam.DataSize];
 
+            //一括処理実行
             _useCase.ExecuteBatch(
                 inputBuffer,
                 processedBuffer,
@@ -92,13 +98,15 @@ public partial class MainWindowViewModel : ObservableObject
                 commonParam,
                 processingConfig);
 
+            //プロット用の配列に格納
             _accumulatedInputWaveform = inputBuffer;
             _accumulatedProcessedWaveform = processedBuffer;
 
+            //プロット更新
             PlotVm.UpdateData(_accumulatedInputWaveform, _accumulatedProcessedWaveform);
 
+            //状態更新
             CurrentState = AppState.Completed;
-            StatusMessage = "一括処理が完了しました";
             _useCase.Reset();
         }
         catch (Exception ex)
@@ -112,25 +120,25 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
+            //パラメータ生成
             var commonParam = CommonParamVm.CreateParameter();
+            var sineParam = WaveformVm.CreateSineWaveParameter(commonParam.SamplingFrequency);
+            var processingConfig = SignalConfigVm.CreateConfig();
 
             if (CurrentState == AppState.Initial || CurrentState == AppState.Completed)
             {
+                //フレーム処理開始時の初期化
                 CurrentState = AppState.FrameProcessing;
                 _accumulatedInputWaveform = new double[commonParam.DataSize];
                 _accumulatedProcessedWaveform = new double[commonParam.DataSize];
                 _useCase.Reset();
             }
 
-            int frameSize = commonParam.FrameSize;
-            int startIndex = _useCase.CurrentStartIndex;
+            //Span生成
+            Span<double> inputFrameSpan = _accumulatedInputWaveform.AsSpan(_useCase.CurrentStartIndex, commonParam.FrameSize);
+            Span<double> processedFrameSpan = _accumulatedProcessedWaveform.AsSpan(_useCase.CurrentStartIndex, commonParam.FrameSize);
 
-            Span<double> inputFrameSpan = _accumulatedInputWaveform.AsSpan(startIndex, frameSize);
-            Span<double> processedFrameSpan = _accumulatedProcessedWaveform.AsSpan(startIndex, frameSize);
-
-            var sineParam = WaveformVm.CreateSineWaveParameter(commonParam.SamplingFrequency);
-            var processingConfig = SignalConfigVm.CreateConfig();
-
+            //フレーム処理実行
             _useCase.ExecuteFrame(
                 inputFrameSpan,
                 processedFrameSpan,
@@ -139,28 +147,24 @@ public partial class MainWindowViewModel : ObservableObject
                 commonParam,
                 processingConfig);
 
-            int accumulatedCount = _useCase.CurrentStartIndex;
-
-            if (_accumulatedInputWaveform != null && _accumulatedProcessedWaveform != null && accumulatedCount > 0)
+            if (_accumulatedInputWaveform != null && _accumulatedProcessedWaveform != null && _useCase.CurrentStartIndex > 0)
             {
-                double[] displayInput = new double[accumulatedCount];
-                double[] displayProcessed = new double[accumulatedCount];
+                //プロット用の配列に格納
+                double[] displayInput = new double[_useCase.CurrentStartIndex];
+                double[] displayProcessed = new double[_useCase.CurrentStartIndex];
 
-                Array.Copy(_accumulatedInputWaveform, 0, displayInput, 0, accumulatedCount);
-                Array.Copy(_accumulatedProcessedWaveform, 0, displayProcessed, 0, accumulatedCount);
+                Array.Copy(_accumulatedInputWaveform, 0, displayInput, 0, _useCase.CurrentStartIndex);
+                Array.Copy(_accumulatedProcessedWaveform, 0, displayProcessed, 0, _useCase.CurrentStartIndex);
 
+                //プロット更新
                 PlotVm.UpdateData(displayInput, displayProcessed);
             }
 
+            //フレーム処理完了判定
             if (!_useCase.HasNextFrame(commonParam))
             {
                 CurrentState = AppState.Completed;
-                StatusMessage = "フレーム処理が完了しました";
                 _useCase.Reset();
-            }
-            else
-            {
-                StatusMessage = $"フレーム処理中... ({_useCase.CurrentStartIndex} / {commonParam.DataSize} サンプル処理済み)";
             }
         }
         catch (Exception ex)
@@ -174,7 +178,6 @@ public partial class MainWindowViewModel : ObservableObject
         PlotVm.Clear();
         _accumulatedInputWaveform = null;
         _accumulatedProcessedWaveform = null;
-        StatusMessage = "準備完了";
         CurrentState = AppState.Initial;
         ErrorOccurred?.Invoke($"入力値のエラー: {ex.Message}");
         _useCase.Reset();
