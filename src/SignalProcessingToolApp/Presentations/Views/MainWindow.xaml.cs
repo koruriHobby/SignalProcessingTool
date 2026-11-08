@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿#nullable enable
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,13 +9,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using SignalProcessingToolApp.Presentation.ViewModel;
+using SignalProcessingToolApp.Presentations.ViewModels;
 
 namespace SignalProcessingTool
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private readonly MainWindowViewModel _viewModel;
@@ -26,20 +24,18 @@ namespace SignalProcessingTool
             _viewModel = new MainWindowViewModel();
             DataContext = _viewModel;
 
-            // PropertyChanged イベントで波形データをプロットに反映
-            _viewModel.PropertyChanged += (s, e) =>
+            _viewModel.PlotVm.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(MainWindowViewModel.InputWaveformData))
+                if (e.PropertyName == nameof(PlotViewModel.InputWaveformData))
                 {
                     UpdateInputWaveform();
                 }
-                else if (e.PropertyName == nameof(MainWindowViewModel.ProcessedWaveformData))
+                else if (e.PropertyName == nameof(PlotViewModel.ProcessedWaveformData))
                 {
                     UpdateProcessedWaveform();
                 }
             };
 
-            // エラーイベント購読
             _viewModel.ErrorOccurred += (errorMessage) =>
             {
                 MessageBox.Show(
@@ -54,21 +50,23 @@ namespace SignalProcessingTool
 
         private void InitializePlots()
         {
-            // グラフの初期設定
+            int initialDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
+
             waveformPlot.Plot.Title("Input Signal");
             waveformPlot.Plot.XLabel("Sample");
             waveformPlot.Plot.YLabel("Amplitude");
-            waveformPlot.Plot.Axes.SetLimits(0, _viewModel.DataSizes[_viewModel.DataSizeIndex] - 1, -1.2, 1.2);
+            waveformPlot.Plot.Axes.SetLimits(0, initialDataSize - 1, -1.2, 1.2);
 
             gainedWaveformPlot.Plot.Title("Processed Signal");
             gainedWaveformPlot.Plot.XLabel("Sample");
             gainedWaveformPlot.Plot.YLabel("Amplitude");
-            gainedWaveformPlot.Plot.Axes.SetLimits(0, _viewModel.DataSizes[_viewModel.DataSizeIndex] - 1, -1.2, 1.2);
+            gainedWaveformPlot.Plot.Axes.SetLimits(0, initialDataSize - 1, -1.2, 1.2);
         }
 
         private void UpdateInputWaveform()
         {
-            if (_viewModel.InputWaveformData == null || _viewModel.InputWaveformData.Length == 0)
+            var data = _viewModel.PlotVm.InputWaveformData;
+            if (data == null || data.Length == 0)
             {
                 waveformPlot.Plot.Clear();
                 waveformPlot.Refresh();
@@ -77,16 +75,18 @@ namespace SignalProcessingTool
 
             waveformPlot.Plot.Clear();
             waveformPlot.Plot.Add.Scatter(
-                xs: Enumerable.Range(0, _viewModel.InputWaveformData.Length).Select(i => (double)i).ToArray(),
-                ys: _viewModel.InputWaveformData);
-            // X軸を常に [0, データサイズ-1] に固定
-            waveformPlot.Plot.Axes.SetLimits(0, _viewModel.CurrentDataSize - 1, -1.2, 1.2);
+                xs: Enumerable.Range(0, data.Length).Select(i => (double)i).ToArray(),
+                ys: data);
+
+            int currentDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
+            waveformPlot.Plot.Axes.SetLimits(0, currentDataSize - 1, -1.2, 1.2);
             waveformPlot.Refresh();
         }
 
         private void UpdateProcessedWaveform()
         {
-            if (_viewModel.ProcessedWaveformData == null || _viewModel.ProcessedWaveformData.Length == 0)
+            var data = _viewModel.PlotVm.ProcessedWaveformData;
+            if (data == null || data.Length == 0)
             {
                 gainedWaveformPlot.Plot.Clear();
                 gainedWaveformPlot.Refresh();
@@ -95,15 +95,15 @@ namespace SignalProcessingTool
 
             gainedWaveformPlot.Plot.Clear();
             gainedWaveformPlot.Plot.Add.Scatter(
-                xs: Enumerable.Range(0, _viewModel.ProcessedWaveformData.Length).Select(i => (double)i).ToArray(),
-                ys: _viewModel.ProcessedWaveformData);
-            // X軸を常に [0, データサイズ-1] に固定
-            gainedWaveformPlot.Plot.Axes.SetLimits(0, _viewModel.CurrentDataSize - 1, -1.2, 1.2);
+                xs: Enumerable.Range(0, data.Length).Select(i => (double)i).ToArray(),
+                ys: data);
+
+            int currentDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
+            gainedWaveformPlot.Plot.Axes.SetLimits(0, currentDataSize - 1, -1.2, 1.2);
             gainedWaveformPlot.Refresh();
         }
     }
 
-    // ラジオボタンのバインディング用コンバーター
     public class EqualityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

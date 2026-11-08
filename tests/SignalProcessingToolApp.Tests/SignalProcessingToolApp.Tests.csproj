@@ -22,4 +22,9 @@
 	<ProjectReference Include="..\..\src\SignalProcessingToolApp\SignalProcessingToolApp.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\" />
+    <Folder Include="Presentation\" />
+  </ItemGroup>
+
 </Project>
