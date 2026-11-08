@@ -25,7 +25,7 @@
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Height" Value="40"/>
-            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Background" Value="Green"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -69,7 +69,14 @@
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="データサイズ [Sample]:"/>
                 <ComboBox Grid.Row="2" Grid.Column="1"
                           ItemsSource="{Binding CommonParamVm.DataSizes}"
-                          SelectedIndex="{Binding CommonParamVm.DataSizeIndex}"/>
+                          SelectedIndex="{Binding CommonParamVm.DataSizeIndex}">
+                    <ComboBox.Background>
+                        <LinearGradientBrush EndPoint="0,1">
+                            <GradientStop Color="#FFF0F0F0"/>
+                            <GradientStop Color="#FF2D9824" Offset="1"/>
+                        </LinearGradientBrush>
+                    </ComboBox.Background>
+                </ComboBox>
             </Grid>
 
             <!-- 1行：入力信号 -->
