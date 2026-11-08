@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj": {}
+    "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj": {
+    "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj",
+        "projectUniqueName": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj",
         "projectName": "SignalProcessingToolApp",
-        "projectPath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj",
+        "projectPath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj",
         "packagesPath": "C:\\Users\\ksato\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\obj\\",
+        "outputPath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -374,14 +374,14 @@
         }
       }
     },
-    "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj": {
+    "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
+        "projectUniqueName": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
         "projectName": "SignalProcessingToolApp.Tests",
-        "projectPath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
+        "projectPath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
         "packagesPath": "C:\\Users\\ksato\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\obj\\",
+        "outputPath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -403,8 +403,8 @@
             "framework": "net10.0-windows7.0",
             "targetAlias": "net10.0-windows",
             "projectReferences": {
-              "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj": {
-                "projectPath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj"
+              "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj": {
+                "projectPath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\src\\SignalProcessingToolApp\\SignalProcessingToolApp.csproj"
               }
             }
           }

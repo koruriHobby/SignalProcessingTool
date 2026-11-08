@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qbACiU2lSzI=",
+  "dgSpecHash": "bSt2da7doEs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ksato\\source\\repos\\koruriHobby\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
+  "projectFilePath": "C:\\Users\\ksato\\source\\repos\\SignalProcessingTool\\tests\\SignalProcessingToolApp.Tests\\SignalProcessingToolApp.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ksato\\.nuget\\packages\\castle.core\\5.1.1\\castle.core.5.1.1.nupkg.sha512",
     "C:\\Users\\ksato\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.2\\communitytoolkit.mvvm.8.4.2.nupkg.sha512",
