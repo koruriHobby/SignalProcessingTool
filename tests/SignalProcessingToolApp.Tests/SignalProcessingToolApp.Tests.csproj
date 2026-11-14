@@ -8,6 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Domain\**" />
+    <Compile Remove="Presentation\**" />
+    <EmbeddedResource Remove="Domain\**" />
+    <EmbeddedResource Remove="Presentation\**" />
+    <None Remove="Domain\**" />
+    <None Remove="Presentation\**" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
 	<PackageReference Include="xunit" Version="2.8.1" />
 	<PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
@@ -20,11 +29,6 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\..\src\SignalProcessingToolApp\SignalProcessingToolApp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Domain\" />
-    <Folder Include="Presentation\" />
   </ItemGroup>
 
 </Project>

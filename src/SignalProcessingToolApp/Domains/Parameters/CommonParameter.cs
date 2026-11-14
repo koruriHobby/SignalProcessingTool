@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace SignalProcessingToolApp.Domain;
+namespace SignalProcessingToolApp.Domains.Parameters;
 
 public record CommonParameter
 {

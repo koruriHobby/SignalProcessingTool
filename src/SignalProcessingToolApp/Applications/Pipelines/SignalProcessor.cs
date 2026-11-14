@@ -1,10 +1,9 @@
 #nullable enable
 
-using SignalProcessingToolApp;
-using SignalProcessingToolApp.Application.Config;
-using SignalProcessingToolApp.Domain.SignalProcessing;
+using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Domains.SignalProcessing;
 
-namespace SignalProcessingToolApp.Application;
+namespace SignalProcessingToolApp.Applications.Pipelines;
 
 public class SignalProcessor
 {

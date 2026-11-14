@@ -1,10 +1,9 @@
 #nullable enable
 
-using SignalProcessingToolApp;
-using SignalProcessingToolApp.Domain;
-using SignalProcessingToolApp.Domain.WaveformGeneration;
+using SignalProcessingToolApp.Domains.Parameters;
+using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Application;
+namespace SignalProcessingToolApp.Applications.Pipelines;
 
 public enum WaveformType
 {

@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace SignalProcessingToolApp.Domain.WaveformGeneration;
+namespace SignalProcessingToolApp.Domains.WaveformGeneration;
 
 public record SineWaveParameter
 {
