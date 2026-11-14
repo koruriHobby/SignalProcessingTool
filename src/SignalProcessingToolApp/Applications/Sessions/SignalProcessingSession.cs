@@ -56,11 +56,14 @@ public class SignalProcessingSession
             _pipeline.Reset();
         }
 
+        var accumulatedInput = _accumulatedInputWaveform ?? throw new InvalidOperationException("入力蓄積配列が初期化されていません。");
+        var accumulatedProcessed = _accumulatedProcessedWaveform ?? throw new InvalidOperationException("処理後蓄積配列が初期化されていません。");
+
         int currentIndex = _pipeline.CurrentStartIndex;
         int frameSize = request.CommonParameter.FrameSize;
 
-        Span<double> inputFrameSpan = _accumulatedInputWaveform.AsSpan(currentIndex, frameSize);
-        Span<double> processedFrameSpan = _accumulatedProcessedWaveform.AsSpan(currentIndex, frameSize);
+        Span<double> inputFrameSpan = accumulatedInput.AsSpan(currentIndex, frameSize);
+        Span<double> processedFrameSpan = accumulatedProcessed.AsSpan(currentIndex, frameSize);
 
         _pipeline.ExecuteFrame(
             inputFrameSpan,
@@ -77,8 +80,8 @@ public class SignalProcessingSession
         double[] displayInput = new double[currentLength];
         double[] displayProcessed = new double[currentLength];
 
-        Array.Copy(_accumulatedInputWaveform, 0, displayInput, 0, currentLength);
-        Array.Copy(_accumulatedProcessedWaveform, 0, displayProcessed, 0, currentLength);
+        Array.Copy(accumulatedInput, 0, displayInput, 0, currentLength);
+        Array.Copy(accumulatedProcessed, 0, displayProcessed, 0, currentLength);
 
         bool hasNext = _pipeline.HasNextFrame(request.CommonParameter);
         if (!hasNext)
