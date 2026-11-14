@@ -25,10 +25,17 @@
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Height" Value="40"/>
-            <Setter Property="Background" Value="Green"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#C8E6C9"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#E0E0E0"/>
+                    <Setter Property="Foreground" Value="#808080"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -41,9 +48,9 @@
 
         <!-- 左列：入力パラメータ -->
         <StackPanel Grid.Column="0" Margin="10,10,10,0" VerticalAlignment="Top" IsEnabled="{Binding IsParametersEnabled}">
-            <TextBlock Text="入力パラメータ" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
-
             <!-- 0行：共通パラメータ -->
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+            <StackPanel>
             <TextBlock Text="共通パラメータ" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
             <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
@@ -58,17 +65,20 @@
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="サンプリング周波数 [Hz]:"/>
                 <ComboBox Grid.Row="0" Grid.Column="1"
-                          ItemsSource="{Binding CommonParamVm.SamplingFrequencies}"
+                                           Style="{StaticResource ChangingColorComboxStyle}"
+                                           ItemsSource="{Binding CommonParamVm.SamplingFrequencies}"
                           SelectedIndex="{Binding CommonParamVm.SamplingFrequencyIndex}"/>
 
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="フレームサイズ [Sample]:"/>
                 <ComboBox Grid.Row="1" Grid.Column="1"
-                          ItemsSource="{Binding CommonParamVm.FrameSizes}"
+                                           Style="{StaticResource ChangingColorComboxStyle}"
+                                           ItemsSource="{Binding CommonParamVm.FrameSizes}"
                           SelectedIndex="{Binding CommonParamVm.FrameSizeIndex}"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="データサイズ [Sample]:"/>
                 <ComboBox Grid.Row="2" Grid.Column="1"
-                          ItemsSource="{Binding CommonParamVm.DataSizes}"
+                                           Style="{StaticResource ChangingColorComboxStyle}"
+                                           ItemsSource="{Binding CommonParamVm.DataSizes}"
                           SelectedIndex="{Binding CommonParamVm.DataSizeIndex}">
                     <ComboBox.Background>
                         <LinearGradientBrush EndPoint="0,1">
@@ -78,9 +88,13 @@
                     </ComboBox.Background>
                 </ComboBox>
             </Grid>
+            </StackPanel>
+            </Border>
 
             <!-- 1行：入力信号 -->
-            <TextBlock Text="入力信号" FontSize="12" FontWeight="Bold" Margin="0,10,0,10"/>
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+            <StackPanel>
+            <TextBlock Text="入力信号" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
             <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -105,19 +119,24 @@
 
                     <TextBlock Grid.Column="0" Text="正弦波周波数 [Hz]:"/>
                     <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding WaveformVm.SineWaveFrequencies}"
+                                                   Style="{StaticResource ChangingColorComboxStyle}"
+                                                   ItemsSource="{Binding WaveformVm.SineWaveFrequencies}"
                               SelectedIndex="{Binding WaveformVm.FrequencyIndex}"/>
                 </Grid>
 
                 <!-- 1行0列：ラジオボタン「インパルス」 -->
-                <RadioButton Grid.Row="1" Grid.Column="0" Content="インパルス" 
-                             IsChecked="{Binding Path=WaveformVm.WaveformTypeIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
-                             VerticalAlignment="Center" Margin="0,5,0,0"/>
-            </Grid>
+                        <RadioButton Grid.Row="1" Grid.Column="0" Content="インパルス" 
+                                 IsChecked="{Binding Path=WaveformVm.WaveformTypeIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
+                                 VerticalAlignment="Center" Margin="0,5,0,0"/>
+                </Grid>
+                </StackPanel>
+                </Border>
 
-            <!-- 2行：信号処理 -->
-            <TextBlock Text="信号処理" FontSize="12" FontWeight="Bold" Margin="0,10,0,10"/>
-            <StackPanel Margin="0,0,0,10">
+                <!-- 2行：信号処理 -->
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+                    <StackPanel>
+                    <TextBlock Text="信号処理" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+                <StackPanel Margin="0,0,0,10">
                 <CheckBox Content="ゲインを適用" IsChecked="{Binding SignalConfigVm.IsGainEnabled}" VerticalAlignment="Center" Margin="0,0,0,5"/>
 
                 <Grid IsEnabled="{Binding SignalConfigVm.IsGainEnabled}">
@@ -128,10 +147,13 @@
 
                     <TextBlock Grid.Column="0" Text="ゲイン値 [dB]:"/>
                     <ComboBox Grid.Column="1"
+                              Style="{StaticResource ChangingColorComboxStyle}"
                               ItemsSource="{Binding SignalConfigVm.GainValues}"
                               SelectedIndex="{Binding SignalConfigVm.GainIndex}"/>
                 </Grid>
             </StackPanel>
+            </StackPanel>
+            </Border>
         </StackPanel>
 
         <!-- 右列：ボタンとグラフ -->
