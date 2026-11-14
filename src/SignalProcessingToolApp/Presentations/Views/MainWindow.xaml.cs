@@ -11,26 +11,30 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SignalProcessingToolApp.Presentations.ViewModels;
 
-namespace SignalProcessingTool
+namespace SignalProcessingToolApp.Presentations.Views
 {
     public partial class MainWindow : Window
     {
+        private const double AmplitudeAxisMinimum = -1.2;
+        private const double AmplitudeAxisMaximum = 1.2;
+        private const int SampleAxisMinimum = 0;
+
         private readonly MainWindowViewModel _viewModel;
 
-        public MainWindow()
+        public MainWindow(MainWindowViewModel viewModel)
         {
             InitializeComponent();
 
-            _viewModel = new MainWindowViewModel();
+            _viewModel = viewModel;
             DataContext = _viewModel;
 
-            _viewModel.PlotVm.PropertyChanged += (s, e) =>
+            _viewModel.PlotVm.PropertyChanged += (sender, propertyChangedEventArgs) =>
             {
-                if (e.PropertyName == nameof(PlotViewModel.InputWaveformData))
+                if (propertyChangedEventArgs.PropertyName == nameof(PlotViewModel.InputWaveformData))
                 {
                     UpdateInputWaveform();
                 }
-                else if (e.PropertyName == nameof(PlotViewModel.ProcessedWaveformData))
+                else if (propertyChangedEventArgs.PropertyName == nameof(PlotViewModel.ProcessedWaveformData))
                 {
                     UpdateProcessedWaveform();
                 }
@@ -50,17 +54,17 @@ namespace SignalProcessingTool
 
         private void InitializePlots()
         {
-            int initialDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
+            int initialDataSize = _viewModel.CurrentDataSize;
 
             waveformPlot.Plot.Title("Input Signal");
             waveformPlot.Plot.XLabel("Sample");
             waveformPlot.Plot.YLabel("Amplitude");
-            waveformPlot.Plot.Axes.SetLimits(0, initialDataSize - 1, -1.2, 1.2);
+            waveformPlot.Plot.Axes.SetLimits(SampleAxisMinimum, initialDataSize - 1, AmplitudeAxisMinimum, AmplitudeAxisMaximum);
 
             gainedWaveformPlot.Plot.Title("Processed Signal");
             gainedWaveformPlot.Plot.XLabel("Sample");
             gainedWaveformPlot.Plot.YLabel("Amplitude");
-            gainedWaveformPlot.Plot.Axes.SetLimits(0, initialDataSize - 1, -1.2, 1.2);
+            gainedWaveformPlot.Plot.Axes.SetLimits(SampleAxisMinimum, initialDataSize - 1, AmplitudeAxisMinimum, AmplitudeAxisMaximum);
         }
 
         private void UpdateInputWaveform()
@@ -75,11 +79,10 @@ namespace SignalProcessingTool
 
             waveformPlot.Plot.Clear();
             waveformPlot.Plot.Add.Scatter(
-                xs: Enumerable.Range(0, data.Length).Select(i => (double)i).ToArray(),
+                xs: Enumerable.Range(0, data.Length).Select(index => (double)index).ToArray(),
                 ys: data);
 
-            int currentDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
-            waveformPlot.Plot.Axes.SetLimits(0, currentDataSize - 1, -1.2, 1.2);
+            waveformPlot.Plot.Axes.SetLimits(SampleAxisMinimum, _viewModel.CurrentDataSize - 1, AmplitudeAxisMinimum, AmplitudeAxisMaximum);
             waveformPlot.Refresh();
         }
 
@@ -95,11 +98,10 @@ namespace SignalProcessingTool
 
             gainedWaveformPlot.Plot.Clear();
             gainedWaveformPlot.Plot.Add.Scatter(
-                xs: Enumerable.Range(0, data.Length).Select(i => (double)i).ToArray(),
+                xs: Enumerable.Range(0, data.Length).Select(index => (double)index).ToArray(),
                 ys: data);
 
-            int currentDataSize = _viewModel.CommonParamVm.DataSizes[_viewModel.CommonParamVm.DataSizeIndex];
-            gainedWaveformPlot.Plot.Axes.SetLimits(0, currentDataSize - 1, -1.2, 1.2);
+            gainedWaveformPlot.Plot.Axes.SetLimits(SampleAxisMinimum, _viewModel.CurrentDataSize - 1, AmplitudeAxisMinimum, AmplitudeAxisMaximum);
             gainedWaveformPlot.Refresh();
         }
     }
@@ -108,18 +110,18 @@ namespace SignalProcessingTool
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is int intValue && parameter is string paramStr && int.TryParse(paramStr, out int paramValue))
+            if (value is int intValue && parameter is string parameterText && int.TryParse(parameterText, out int parameterValue))
             {
-                return intValue == paramValue;
+                return intValue == parameterValue;
             }
             return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is bool boolValue && boolValue && parameter is string paramStr && int.TryParse(paramStr, out int paramValue))
+            if (value is bool boolValue && boolValue && parameter is string parameterText && int.TryParse(parameterText, out int parameterValue))
             {
-                return paramValue;
+                return parameterValue;
             }
             return Binding.DoNothing;
         }

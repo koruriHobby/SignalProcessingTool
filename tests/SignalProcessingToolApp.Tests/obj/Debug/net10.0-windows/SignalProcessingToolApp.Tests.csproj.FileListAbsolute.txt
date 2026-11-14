@@ -268,3 +268,5 @@ C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.T
 C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.Tests\obj\Debug\net10.0-windows\SignalProcessingToolApp.Tests.pdb
 C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.Tests\obj\Debug\net10.0-windows\SignalProcessingToolApp.Tests.genruntimeconfig.cache
 C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.Tests\obj\Debug\net10.0-windows\ref\SignalProcessingToolApp.Tests.dll
+C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.Tests\bin\Debug\net10.0-windows\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\ksato\source\repos\SignalProcessingTool\tests\SignalProcessingToolApp.Tests\bin\Debug\net10.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll

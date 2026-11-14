@@ -1,7 +1,5 @@
 ﻿#nullable enable
 using CommunityToolkit.Mvvm.ComponentModel;
-using SignalProcessingToolApp.Application.Config;
-using SignalProcessingToolApp.Domain;
 
 namespace SignalProcessingToolApp.Presentations.ViewModels;
 
@@ -15,10 +13,38 @@ public partial class SignalProcessingViewModel : ObservableObject
 
     public List<int> GainValues { get; } = new() { 0, -3, -6, -9, -12, -15, -18, -200 };
 
-    public SignalProcessingConfig CreateConfig()
+    [ObservableProperty]
+    private bool _isDelayEnabled = false;
+
+    [ObservableProperty]
+    private string _delayBufferSizeText = string.Empty;
+
+    [ObservableProperty]
+    private string _delaySampleCountText = string.Empty;
+
+    public int ParseDelayBufferSize()
     {
-        int gainDb = GainValues[GainIndex];
-        var gainConfig = new GainConfig(IsGainEnabled, gainDb);
-        return new SignalProcessingConfig(gainConfig);
+        return ParseInteger(
+            DelayBufferSizeText,
+            "ディレイバッファサイズ");
+    }
+
+    public int ParseDelaySampleCount()
+    {
+        return ParseInteger(
+            DelaySampleCountText,
+            "ディレイサンプル数");
+    }
+
+    private static int ParseInteger(
+        string text,
+        string parameterName)
+    {
+        if (!int.TryParse(text, out int value))
+        {
+            throw new FormatException($"{parameterName}は整数で入力してください。");
+        }
+
+        return value;
     }
 }

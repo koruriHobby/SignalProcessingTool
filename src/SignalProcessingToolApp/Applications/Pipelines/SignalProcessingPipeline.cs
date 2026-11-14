@@ -1,26 +1,24 @@
-using SignalProcessingToolApp.Application.Config;
-using SignalProcessingToolApp.Domain;
-using SignalProcessingToolApp.Domain.SignalProcessing;
-using SignalProcessingToolApp.Domain.WaveformGeneration;
+using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Domains.Parameters;
+using SignalProcessingToolApp.Domains.SignalProcessing;
+using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Application;
+namespace SignalProcessingToolApp.Applications.Pipelines;
 
 public class SignalProcessingPipeline
 {
     private readonly WaveformGenerator _waveformGenerator;
-    private readonly SignalProcessor _signalProcessor;
     private readonly FrameProcessor _frameProcessor;
+    private SignalProcessor? _signalProcessor;
 
     public int CurrentStartIndex => _frameProcessor.CurrentStartIndex;
 
     public SignalProcessingPipeline(
-        SineWaveGenerator sineWaveGenerator,
-        UnitImpulseGenerator unitImpulseGenerator,
-        GainProcessor gainProcessor)
+        WaveformGenerator waveformGenerator,
+        FrameProcessor frameProcessor)
     {
-        _waveformGenerator = new WaveformGenerator(sineWaveGenerator, unitImpulseGenerator);
-        _signalProcessor = new SignalProcessor(gainProcessor);
-        _frameProcessor = new FrameProcessor();
+        _waveformGenerator = waveformGenerator ?? throw new ArgumentNullException(nameof(waveformGenerator));
+        _frameProcessor = frameProcessor ?? throw new ArgumentNullException(nameof(frameProcessor));
     }
 
     public void ExecuteBatch(
@@ -38,7 +36,8 @@ public class SignalProcessingPipeline
                 commonParameter,
                 startIndex: 0);
 
-        _signalProcessor.Process(
+        var signalProcessor = new SignalProcessor(processingConfig.DelayConfig);
+        signalProcessor.Process(
             inputSignal,
             processedSignal,
             processingConfig);
@@ -59,6 +58,7 @@ public class SignalProcessingPipeline
             commonParameter,
             startIndex: _frameProcessor.CurrentStartIndex);
 
+        _signalProcessor ??= new SignalProcessor(processingConfig.DelayConfig);
         _signalProcessor.Process(
             inputSignal,
             processedSignal,
@@ -74,6 +74,7 @@ public class SignalProcessingPipeline
 
     public void Reset()
     {
+        _signalProcessor = null;
         _frameProcessor.Reset();
     }
 }
