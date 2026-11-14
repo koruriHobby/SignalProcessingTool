@@ -41,9 +41,7 @@ namespace SignalProcessingToolApp
         {
             services.AddSingleton<SineWaveGenerator>();
             services.AddSingleton<UnitImpulseGenerator>();
-            services.AddSingleton<GainProcessor>();
             services.AddSingleton<WaveformGenerator>();
-            services.AddSingleton<SignalProcessor>();
             services.AddSingleton<FrameProcessor>();
             services.AddSingleton<SignalProcessingPipeline>();
             services.AddSingleton<SignalProcessingSession>();

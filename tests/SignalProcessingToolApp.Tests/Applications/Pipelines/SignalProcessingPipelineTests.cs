@@ -13,7 +13,6 @@ public class SignalProcessingPipelineTests
     {
         return new SignalProcessingPipeline(
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
-            new SignalProcessor(new GainProcessor()),
             new FrameProcessor());
     }
 

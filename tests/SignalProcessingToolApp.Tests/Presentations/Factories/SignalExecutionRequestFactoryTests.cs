@@ -53,4 +53,54 @@ public class SignalExecutionRequestFactoryTests
         Assert.True(request.ProcessingConfig.GainConfig.IsEnabled);
         Assert.Equal(-6.0, request.ProcessingConfig.GainConfig.GainDb);
     }
+
+    [Fact]
+    public void Create_WithDelayDisabled_CreatesDisabledDelayConfig()
+    {
+        var factory = new SignalExecutionRequestFactory();
+        var commonParameterVm = new CommonParameterViewModel();
+        var inputSignalVm = new InputSignalViewModel();
+        var signalProcessingVm = new SignalProcessingViewModel();
+
+        var request = factory.Create(commonParameterVm, inputSignalVm, signalProcessingVm);
+
+        Assert.NotNull(request.ProcessingConfig.DelayConfig);
+        Assert.False(request.ProcessingConfig.DelayConfig!.IsEnabled);
+    }
+
+    [Fact]
+    public void Create_WithDelayEnabled_CreatesDelayConfigFromInputText()
+    {
+        var factory = new SignalExecutionRequestFactory();
+        var commonParameterVm = new CommonParameterViewModel();
+        var inputSignalVm = new InputSignalViewModel();
+        var signalProcessingVm = new SignalProcessingViewModel
+        {
+            IsDelayEnabled = true,
+            DelayBufferSizeText = "16",
+            DelaySampleCountText = "4"
+        };
+
+        var request = factory.Create(commonParameterVm, inputSignalVm, signalProcessingVm);
+
+        Assert.True(request.ProcessingConfig.DelayConfig!.IsEnabled);
+        Assert.Equal(16, request.ProcessingConfig.DelayConfig.BufferSize);
+        Assert.Equal(4, request.ProcessingConfig.DelayConfig.SampleCount);
+    }
+
+    [Fact]
+    public void Create_WithDelayEnabledAndNonIntegerText_ThrowsFormatException()
+    {
+        var factory = new SignalExecutionRequestFactory();
+        var commonParameterVm = new CommonParameterViewModel();
+        var inputSignalVm = new InputSignalViewModel();
+        var signalProcessingVm = new SignalProcessingViewModel
+        {
+            IsDelayEnabled = true,
+            DelayBufferSizeText = "abc",
+            DelaySampleCountText = "4"
+        };
+
+        Assert.Throws<FormatException>(() => factory.Create(commonParameterVm, inputSignalVm, signalProcessingVm));
+    }
 }
