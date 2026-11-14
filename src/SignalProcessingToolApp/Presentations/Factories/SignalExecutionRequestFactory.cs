@@ -59,7 +59,21 @@ public class SignalExecutionRequestFactory
     {
         int gainDb = viewModel.GainValues[viewModel.GainIndex];
         var gainConfig = new GainConfig(viewModel.IsGainEnabled, gainDb);
+        var delayConfig = CreateDelayConfig(viewModel);
 
-        return new SignalProcessingConfig(gainConfig);
+        return new SignalProcessingConfig(gainConfig, delayConfig);
+    }
+
+    private static DelayConfig CreateDelayConfig(SignalProcessingViewModel viewModel)
+    {
+        if (!viewModel.IsDelayEnabled)
+        {
+            return new DelayConfig(false, 0, 0);
+        }
+
+        return new DelayConfig(
+            true,
+            viewModel.ParseDelayBufferSize(),
+            viewModel.ParseDelaySampleCount());
     }
 }

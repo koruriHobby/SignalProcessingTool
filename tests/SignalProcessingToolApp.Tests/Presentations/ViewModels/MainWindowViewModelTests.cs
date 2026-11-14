@@ -15,7 +15,6 @@ public class MainWindowViewModelTests
     {
         var pipeline = new SignalProcessingPipeline(
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
-            new SignalProcessor(new GainProcessor()),
             new FrameProcessor());
 
         return new MainWindowViewModel(new SignalProcessingSession(pipeline), new SignalExecutionRequestFactory());
