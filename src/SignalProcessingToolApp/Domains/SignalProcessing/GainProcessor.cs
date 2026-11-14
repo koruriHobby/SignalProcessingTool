@@ -1,8 +1,10 @@
-namespace SignalProcessingToolApp.Domain.SignalProcessing;
+namespace SignalProcessingToolApp.Domains.SignalProcessing;
 
 public class GainProcessor
 {
     private const double MinusInfinityDb = -200.0;
+    private const double DecibelBase = 10.0;
+    private const double AmplitudeDecibelBase = 20.0;
 
     public void Apply(
         ReadOnlySpan<double> input,
@@ -24,11 +26,11 @@ public class GainProcessor
             throw new ArgumentException("Output span must be at least as long as input span.", nameof(output));
         }
 
-        double linearGain = (gainDb <= MinusInfinityDb) ? 0.0 : Math.Pow(10.0, gainDb / 20.0);
+        double linearGain = (gainDb <= MinusInfinityDb) ? 0.0 : Math.Pow(DecibelBase, gainDb / AmplitudeDecibelBase);
 
-        for (int i = 0; i < input.Length; i++)
+        for (int index = 0; index < input.Length; index++)
         {
-            output[i] = input[i] * linearGain;
+            output[index] = input[index] * linearGain;
         }
     }
 }

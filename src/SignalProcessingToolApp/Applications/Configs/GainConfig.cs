@@ -1,8 +1,6 @@
 #nullable enable
 
-using SignalProcessingToolApp;
-
-namespace SignalProcessingToolApp.Application.Config;
+namespace SignalProcessingToolApp.Applications.Configs;
 
 public record GainConfig
 {

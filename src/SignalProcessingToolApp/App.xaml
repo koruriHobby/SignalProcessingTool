@@ -1,9 +1,8 @@
-﻿<Application x:Class="SignalProcessingTool.App"
+﻿<Application x:Class="SignalProcessingToolApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SignalProcessingTool"
-             StartupUri="Presentations/Views/MainWindow.xaml">
-    <Application.Resources>
+                       xmlns:local="clr-namespace:SignalProcessingToolApp">
+             <Application.Resources>
          
     </Application.Resources>
 </Application>

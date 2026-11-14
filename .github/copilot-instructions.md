@@ -3,6 +3,10 @@
 - 10.0
 ### GUIフレームワーク
 - WPF
+### DIコンテナ
+- Microsoft.Extensions.DependencyInjection 11.0.0
+- コンポジションルートは App.xaml.cs（OnStartup で ConfigureServices により登録）
+- Singleton で各 Application/Domain/Presentation サービスを登録し、コンストラクタインジェクションで解決
 ### NuGet
 - commuittyToolkitMVVM
 - XUnit
@@ -12,15 +16,23 @@
 - ローカル変数はキャメルケース
 - プロパティ、関数名、定数はパスカルケース
 - マジックナンバーは禁止
+- 変数名の省略は禁止（例：viewmodelをvm、indexをidxなど）
 - 関数の引数は1個ずつ改行して宣言
 ## 3. レイヤ分け
-### Presentation
-- View(xaml)
-- ViewModel
-### Application
-- UseCase
-### Domain
-- 各信号処理の実装
+### Presentation（src\SignalProcessingToolApp\Presentations）
+- Views：View（xaml）、code-behind
+- ViewModels：MainWindowViewModel、SubViewModels（InputSignal／CommonParameter／SignalProcessing／Plot）
+- States：AppState、ProcessStateManager（状態遷移・UI有効状態の管理）
+- Factories：SignalExecutionRequestFactory（UI値からリクエストを生成）
+### Application（src\SignalProcessingToolApp\Applications）
+- Sessions：SignalProcessingSession（一括・フレーム単位の処理実行、波形蓄積）
+- Pipelines：SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、WaveformType
+- Configs：SignalProcessingConfig、GainConfig
+- DTOs：SignalExecutionRequest
+### Domain（src\SignalProcessingToolApp\Domains）
+- WaveformGeneration：SineWaveGenerator、UnitImpulseGenerator、SineWaveParameter
+- SignalProcessing：GainProcessor
+- Parameters：CommonParameter
 
 ## 4. UI
 ### 方針
@@ -151,19 +163,73 @@ stateDiagram-v2
 
 ```
 
-## 7. ViewModelの方針
-### ライブラリ・フレームワークの方針
-- CommunityToolkit.Mvvmの以下機能を全面的に活用する。
-- `[ObservableProperty]`
-- `[RelayCommand]`
-### 状態管理
-- IsXXXX などの個別フラグ変数の乱立を防ぐため、アプリの各状態を enum で定義する。
-- ViewModel 側では、個別のブール値フラグを多数持たず、現在の状態を示す enumをフィールド（プロパティ）として一括保持・管理する。
-### パラメータ入力欄の活性・非活性制御
-- パラメータ入力欄の有効 / 無効（活性 / 非活性）は、**1つの制御フラグ（または状態）** で切り替える。
-- XAML のコンテナ機能（GroupBoxやStackPanelなど）を活用し、親要素の IsEnabledにまとめてバインドすることで、個別のコントロール単位でのバインディング記述を削減する。
-### 拡張性を考慮した UseCase / Config 設計
-- 信号処理アルゴリズムは今後追加・拡張していく予定のため、追加に強い構成とする。
-- 各信号処理に対応する Config クラスを用意し、有効化フラグ（`IsEnabled`）と必要な各種パラメータを保持させる。これらの Config をまとめて保持する統合クラスを作成する。
-- UseCase側は、上記の統合クラスを保持する。
-- ViewModel から UseCase へ渡すデータは、「入力データ」と「Config をまとめたクラス」のみとしViewModel の責務を最小限に抑える。
+## 9. クラス図（最新）
+### クリーンアーキテクチャのレイヤ
+| レイヤ | エリア（namespace） | 含むクラス | 依存先 |
+|---|---|---|---|
+| Presentation | SignalProcessingToolApp.Presentations.* | MainWindow、MainWindowViewModel、SubViewModels、ProcessStateManager、SignalExecutionRequestFactory | Application、Domain |
+| Application | SignalProcessingToolApp.Applications.* | SignalProcessingSession、SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、SignalExecutionRequest、SignalProcessingConfig、GainConfig | Domain |
+| Domain | SignalProcessingToolApp.Domains.* | SineWaveGenerator、UnitImpulseGenerator、GainProcessor、SineWaveParameter、CommonParameter | なし（他層に依存しない） |
+
+- 依存方向は Presentation → Application → Domain の一方向とする
+- App.xaml.cs（コンポジションルート）は全層を参照してDI登録のみを行う
+
+```mermaid
+classDiagram
+    namespace Presentation {
+        class MainWindow
+        class MainWindowViewModel
+        class SignalProcessingViewModel
+        class InputSignalViewModel
+        class CommonParameterViewModel
+        class PlotViewModel
+        class ProcessStateManager
+        class SignalExecutionRequestFactory
+    }
+    namespace Application {
+        class SignalProcessingSession
+        class SignalProcessingPipeline
+        class WaveformGenerator
+        class SignalProcessor
+        class FrameProcessor
+        class WaveformType
+        class SignalExecutionRequest
+        class SignalProcessingConfig
+        class GainConfig
+    }
+    namespace Domain {
+        class SineWaveGenerator
+        class UnitImpulseGenerator
+        class GainProcessor
+        class SineWaveParameter
+        class CommonParameter
+    }
+
+    MainWindow --> MainWindowViewModel : DataContext
+    MainWindowViewModel *-- ProcessStateManager
+    MainWindowViewModel *-- SignalProcessingViewModel
+    MainWindowViewModel *-- InputSignalViewModel
+    MainWindowViewModel *-- CommonParameterViewModel
+    MainWindowViewModel *-- PlotViewModel
+    MainWindowViewModel --> SignalExecutionRequestFactory
+    MainWindowViewModel --> SignalProcessingSession
+    SignalExecutionRequestFactory ..> SignalExecutionRequest : creates
+    SignalProcessingSession --> SignalProcessingPipeline
+    SignalProcessingSession ..> SignalExecutionRequest
+    SignalProcessingPipeline --> WaveformGenerator
+    SignalProcessingPipeline --> SignalProcessor
+    SignalProcessingPipeline --> FrameProcessor
+    WaveformGenerator ..> WaveformType
+    WaveformGenerator --> SineWaveGenerator
+    WaveformGenerator --> UnitImpulseGenerator
+    SignalProcessor --> GainProcessor
+    SignalProcessor ..> GainConfig
+    SignalExecutionRequest --> SignalProcessingConfig
+    SignalProcessingConfig --> GainConfig
+    SignalExecutionRequest --> CommonParameter
+    SignalExecutionRequest --> SineWaveParameter
+    SineWaveGenerator ..> SineWaveParameter
+    SineWaveGenerator ..> CommonParameter
+    UnitImpulseGenerator ..> CommonParameter
+```
+

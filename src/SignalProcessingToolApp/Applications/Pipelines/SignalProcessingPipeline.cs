@@ -1,9 +1,9 @@
-using SignalProcessingToolApp.Application.Config;
-using SignalProcessingToolApp.Domain;
-using SignalProcessingToolApp.Domain.SignalProcessing;
-using SignalProcessingToolApp.Domain.WaveformGeneration;
+using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Domains.Parameters;
+using SignalProcessingToolApp.Domains.SignalProcessing;
+using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Application;
+namespace SignalProcessingToolApp.Applications.Pipelines;
 
 public class SignalProcessingPipeline
 {
@@ -14,13 +14,13 @@ public class SignalProcessingPipeline
     public int CurrentStartIndex => _frameProcessor.CurrentStartIndex;
 
     public SignalProcessingPipeline(
-        SineWaveGenerator sineWaveGenerator,
-        UnitImpulseGenerator unitImpulseGenerator,
-        GainProcessor gainProcessor)
+        WaveformGenerator waveformGenerator,
+        SignalProcessor signalProcessor,
+        FrameProcessor frameProcessor)
     {
-        _waveformGenerator = new WaveformGenerator(sineWaveGenerator, unitImpulseGenerator);
-        _signalProcessor = new SignalProcessor(gainProcessor);
-        _frameProcessor = new FrameProcessor();
+        _waveformGenerator = waveformGenerator ?? throw new ArgumentNullException(nameof(waveformGenerator));
+        _signalProcessor = signalProcessor ?? throw new ArgumentNullException(nameof(signalProcessor));
+        _frameProcessor = frameProcessor ?? throw new ArgumentNullException(nameof(frameProcessor));
     }
 
     public void ExecuteBatch(

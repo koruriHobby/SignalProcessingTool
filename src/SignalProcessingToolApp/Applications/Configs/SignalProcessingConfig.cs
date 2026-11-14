@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace SignalProcessingToolApp.Application.Config;
+namespace SignalProcessingToolApp.Applications.Configs;
 
 public record SignalProcessingConfig
 {
