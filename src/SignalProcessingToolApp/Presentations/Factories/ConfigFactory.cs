@@ -1,4 +1,5 @@
 using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Domains.Filters;
 using SignalProcessingToolApp.Presentations.ViewModels;
 
 namespace SignalProcessingToolApp.Presentations.Factories;
@@ -6,6 +7,7 @@ namespace SignalProcessingToolApp.Presentations.Factories;
 public class ConfigFactory
 {
     private const int DisabledDelaySize = 0;
+    private const double DisabledCutoffFrequency = 0.0;
 
     public CommonConfig CreateCommonConfig(
         CommonParameterViewModel commonParameterViewModel)
@@ -30,8 +32,23 @@ public class ConfigFactory
         int gainDb = signalProcessingViewModel.GainValues[signalProcessingViewModel.GainIndex];
         var gainConfig = new GainConfig(signalProcessingViewModel.IsGainEnabled, gainDb);
         var delayConfig = CreateDelayConfig(signalProcessingViewModel);
+        var iirConfig = CreateIirConfig(signalProcessingViewModel);
 
-        return new SignalProcessingConfig(gainConfig, delayConfig);
+        return new SignalProcessingConfig(gainConfig, delayConfig, iirConfig);
+    }
+
+    private static IirConfig CreateIirConfig(
+        SignalProcessingViewModel signalProcessingViewModel)
+    {
+        if (!signalProcessingViewModel.IsIirFilterEnabled)
+        {
+            return new IirConfig(false, FilterType.B0Check, DisabledCutoffFrequency);
+        }
+
+        return new IirConfig(
+            true,
+            signalProcessingViewModel.GetFilterType(),
+            signalProcessingViewModel.ParseCutoffFrequency());
     }
 
     private static DelayConfig CreateDelayConfig(

@@ -21,6 +21,14 @@ namespace SignalProcessingToolApp.Presentations.Views
 
         private readonly MainWindowViewModel _viewModel;
 
+        private void CutoffFrequencyTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && sender is TextBox textBox)
+            {
+                textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            }
+        }
+
         public MainWindow(MainWindowViewModel viewModel)
         {
             InitializeComponent();

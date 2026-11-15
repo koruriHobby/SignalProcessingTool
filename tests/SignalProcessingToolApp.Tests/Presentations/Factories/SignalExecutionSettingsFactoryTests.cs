@@ -1,16 +1,16 @@
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Presentations.Factories;
 using SignalProcessingToolApp.Presentations.ViewModels;
 using Xunit;
 
 namespace SignalProcessingToolApp.Tests.Presentations.Factories;
 
-public class SignalExecutionRequestFactoryTests
+public class SignalExecutionSettingsFactoryTests
 {
     [Fact]
     public void Create_WithDefaultSineWaveViewModels_CreatesSineWaveRequest()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -29,7 +29,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithImpulseViewModel_CreatesUnitImpulseRequestWithoutSineWaveConfig()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel { WaveformTypeIndex = 1 };
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -43,7 +43,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithGainEnabled_CreatesGainConfigFromSelectedValue()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel { IsGainEnabled = true, GainIndex = 2 };
@@ -57,7 +57,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayDisabled_CreatesDisabledDelayConfig()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -71,7 +71,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayEnabled_CreatesDelayConfigFromInputText()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel
@@ -91,7 +91,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayEnabledAndNonIntegerText_ThrowsFormatException()
     {
-        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
+        var factory = new SignalExecutionSettingsFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel

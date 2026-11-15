@@ -1,10 +1,10 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.Pipelines;
+namespace SignalProcessingToolApp.Tests.Applications.Chains;
 
 public class SignalProcessorTests
 {

@@ -1,16 +1,18 @@
-﻿using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Applications.Settings;
 using SignalProcessingToolApp.Applications.Factories;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Domains.Filters;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Applications.Sessions;
+namespace SignalProcessingToolApp.Applications.Services;
 
-public class SignalProcessingSession
+public class SignalProcessingService
 {
-    private readonly SignalProcessingPipeline _pipeline;
+    private readonly SignalProcessingChain _pipeline;
     private readonly ParameterFactory _parameterFactory;
 
     private double[]? _accumulatedInputWaveform;
@@ -18,8 +20,8 @@ public class SignalProcessingSession
 
     public bool IsInitialized => _accumulatedInputWaveform != null && _accumulatedProcessedWaveform != null;
 
-    public SignalProcessingSession(
-        SignalProcessingPipeline pipeline,
+    public SignalProcessingService(
+        SignalProcessingChain pipeline,
         ParameterFactory parameterFactory)
     {
         _pipeline = pipeline;
@@ -29,11 +31,12 @@ public class SignalProcessingSession
     /// <summary>
     /// 一括処理を実行し、結果の全データを返す
     /// </summary>
-    public (double[] Input, double[] Processed) ExecuteBatch(SignalExecutionRequest request)
+    public (double[] Input, double[] Processed) ExecuteBatch(SignalExecutionSettings request)
     {
         var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
         var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
         var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+        var iirParameter = _parameterFactory.CreateIirParameter(request.ProcessingConfig.IirConfig, commonParameter);
 
         var inputBuffer = new double[commonParameter.DataSize];
         var processedBuffer = new double[commonParameter.DataSize];
@@ -45,7 +48,8 @@ public class SignalProcessingSession
             sineWaveParameter,
             commonParameter,
             request.ProcessingConfig.GainConfig,
-            delayParameter
+            delayParameter,
+            iirParameter
         );
 
         _pipeline.Reset();
@@ -56,11 +60,12 @@ public class SignalProcessingSession
     /// <summary>
     /// フレーム処理を1ステップ進め、これまでの累積描画用データを返す
     /// </summary>
-    public (double[] DisplayInput, double[] DisplayProcessed, bool IsCompleted) ExecuteNextFrame(SignalExecutionRequest request)
+    public (double[] DisplayInput, double[] DisplayProcessed, bool IsCompleted) ExecuteNextFrame(SignalExecutionSettings request)
     {
         var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
         var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
         var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+        var iirParameter = _parameterFactory.CreateIirParameter(request.ProcessingConfig.IirConfig, commonParameter);
 
         if (_pipeline.CurrentStartIndex == 0)
         {
@@ -86,7 +91,8 @@ public class SignalProcessingSession
             sineWaveParameter,
             commonParameter,
             request.ProcessingConfig.GainConfig,
-            delayParameter
+            delayParameter,
+            iirParameter
         );
 
         int currentLength = _pipeline.CurrentStartIndex;
@@ -105,6 +111,14 @@ public class SignalProcessingSession
         }
 
         return (displayInput, displayProcessed, IsCompleted: !hasNext);
+    }
+
+    public FilterCoefficientsDto CalculateFilterCoefficients(
+        FilterType filterType,
+        double samplingFrequency,
+        double cutoffFrequency)
+    {
+        return _parameterFactory.CreateFilterCoefficientsDto(filterType, samplingFrequency, cutoffFrequency);
     }
 
     public void Reset()

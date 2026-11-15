@@ -7,7 +7,7 @@
 - Microsoft.Extensions.DependencyInjection 11.0.0
 - コンポジションルートは App.xaml.cs（OnStartup で ConfigureServices により登録）
 - Singleton で各 Application/Domain/Presentation サービスを登録し、コンストラクタインジェクションで解決
-- 状態を持つ処理実体（SignalProcessor、GainProcessor、DelayProcessor）は DI に登録せず、SignalProcessingPipeline が処理単位で生成・保持する
+GainProcessor、DelayProcessor、IirProcessor は DI に登録せず
 ### NuGet
 - commuittyToolkitMVVM
 - XUnit
@@ -24,17 +24,18 @@
 - Views：View（xaml）、code-behind
 - ViewModels：MainWindowViewModel、SubViewModels（InputSignal／CommonParameter／SignalProcessing／Plot）
 - States：AppState、ProcessStateManager（状態遷移・UI有効状態の管理）
-- Factories：SignalExecutionRequestFactory（ConfigFactoryを用いてリクエストを生成）、ConfigFactory（UI値からApplicationのConfigを生成）
+- Factories：SignalExecutionSettingsFactory（ConfigFactoryを用いてリクエストを生成）、ConfigFactory（UI値からApplicationのConfigを生成）
 ### Application（src\SignalProcessingToolApp\Applications）
-- Sessions：SignalProcessingSession（一括・フレーム単位の処理実行、波形蓄積）
-- Pipelines：SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、WaveformType
-- Configs：SignalProcessingConfig、GainConfig、DelayConfig、CommonConfig、SineWaveConfig
-- DTOs：SignalExecutionRequest（Configのみを保持）
-- Factories：ParameterFactory（ApplicationのConfigからDomainのParameterを生成）
+- Sessions：SignalProcessingService（一括・フレーム単位の処理実行、波形蓄積）
+- Pipelines：SignalProcessingChain、WaveformGenerator、SignalProcessor、FrameProcessor、WaveformType
+- Configs：SignalProcessingConfig、GainConfig、DelayConfig、IirConfig、CommonConfig、SineWaveConfig
+- DTOs：SignalExecutionSettings（Configのみを保持）、FilterCoefficientsDto（係数表示用）
+- Factories：ParameterFactory（ApplicationのConfigからDomainのParameterを生成。IIRはDomainのFilterDesignerを呼び出して係数を計算）
 ### Domain（src\SignalProcessingToolApp\Domains）
 - WaveformGeneration：SineWaveGenerator、UnitImpulseGenerator、SineWaveParameter
-- SignalProcessing：GainProcessor、DelayProcessor（リングバッファによる遅延処理）
-- Parameters：CommonParameter、DelayParameter
+- SignalProcessing：GainProcessor、DelayProcessor（リングバッファによる遅延処理）、IirProcessor（x・y の過去値を保持する2次IIR処理）、FilterDesigner（サンプリング周波数・カットオフ周波数・フィルタタイプから係数を計算）
+- Parameters：CommonParameter、DelayParameter、IirParameter（係数 b0・b1・b2・a1・a2のみを保持）
+- Filters：FilterType（スルー、1・2サンプルディレイ、a1・a2確認用、LPF、HPF）
 
 ## 4. UI
 ### 方針
@@ -75,7 +76,26 @@
     - ディレイバッファサイズ [Sample]
     - ディレイサンプル数 [Sample]
   - チェック未時はディレイを適用しない
-- 処理順序：ゲイン → ディレイ
+- 2次IIRフィルタ
+  - チェックボックス「2次IIRを適用」
+  - チェック時のみ以下が有効
+    - フィルタタイプ（コンボボックス）
+      - 値は b0確認用、b1確認用、b2確認用、a1確認用、a2確認用、LPF(butter)、HPF(butter)
+    - カットオフ周波数 [Hz]（テキスト入力、実数）
+      - 初期値は 100
+      - LPF(butter)・HPF(butter) 選択時のみ有効、それ以外は非活性
+      - 係数の更新は入力確定時（フォーカス喪失・Enterキー）に行う（入力途中では更新しない）
+  - 係数表示（b0・b1・b2・a1・a2）はフィルタタイプ選択時、およびカットオフ周波数の入力確定時に更新
+    - 係数の表示形式
+      - 絶対値が 0.01 以上：小数点以下2桁固定（例：1.00、0.00、1.98）
+      - 絶対値が 0.01 未満（0 を除く）：指数表記、仮数部は小数点以下2桁、指数は符号と1桁（例：5.02E-5、1.00E-4）
+    - 係数式の表示領域は入力列と同程度の幅を確保し、LPF(butter)等の長い表示がはみ出ないようにする
+    - 係数の表示形式
+      - 絶対値が 0.01 以上：小数点以下2桁固定（例：1.00、0.00、1.98）
+      - 絶対値が 0.01 未満（0 を除く）：指数表記、仮数部は小数点以下2桁、指数は符号と1桁（例：5.02E-5、1.00E-4）
+    - 係数式の表示領域は入力列と同程度の幅を確保し、LPF(butter)等の長い表示がはみ出ないようにする
+  - チェック未時は2次IIRを適用しない
+- 処理順序：ゲイン → ディレイ → 2次IIR
 
 ### 右列（グラフとボタン）
 #### 0行：操作ボタンとステータス
@@ -104,6 +124,7 @@
 ## 5. バリデーション
 ### プレゼンテーション層
 - ユーザー入力については、プレゼンテーション層で数値以外の入力が入った場合は例外をスロー。
+- カットオフ周波数（実数入力可）は、プレゼンテーション層で数値に変換できない場合は例外をスロー。
 
 ### ドメイン層
 #### 1. 共通パラメータ
@@ -120,6 +141,10 @@
   - サンプル数はバッファサイズ未満であること。以上なら例外をスロー。
 - ディレイの入力値（文字列）は整数に変換できない場合、プレゼンテーション層で例外をスロー。
 - 実装：リングバッファで遅延させる。フレーム間で状態（バッファ・書き込み位置）を保持し、リセット時に破棄する。
+- 2次IIR（IIR有効時のみ検証）
+  - カットオフ周波数は 0 以上であること。負の値なら例外をスロー（Domainで検証）。
+  - カットオフ周波数はナイキスト周波数（サンプリング周波数 / 2）未満であること。以上なら例外をスロー（Domainで検証）。
+  - カットオフ周波数の入力確定時（フォーカス喪失・Enterキー）にも同じ検証を行う。失敗時は係数表示をクリアし、メッセージボックスでエラー内容を表示して初期状態（グラフ・状態のリセット）に戻す。設定値は保持する。
 
 ## 6. エラー処理
 ### 表示方法
@@ -142,8 +167,7 @@
   - グラフをクリア（何もプロットされない状態）
   - メッセージボックスでエラー内容を表示
   - ステータス：「準備完了」
-  - ユーザーがメッセージボックスを閉じると初期状態に戻す
-- フレーム処理時のグラフプロット
+  - ユーザーがメッセージボックスを閉じると初期状態に戻す- フレーム処理時のグラフプロット
   - **リセット状態**: 蓄積配列は Null（何もプロットされない）
   - **フレーム処理 1 回目**: 蓄積配列を新規作成（サイズ = データサイズ）、インデックス 0～（フレームサイズ-1）にデータを書き込み、全蓄積データ（0～フレームサイズ分）をプロット
   - **フレーム処理 2 回目**: 蓄積配列に追記、インデックス フレームサイズ～（2×フレームサイズ-1）にデータを書き込み、全蓄積データ（0～2×フレームサイズ分）をプロット
@@ -181,13 +205,13 @@ stateDiagram-v2
 ### クリーンアーキテクチャのレイヤ
 | レイヤ          | エリア（namespace）                          | 含むクラス                                                                                                                                                                                                               | 依存先          |
 | ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| Presentation | SignalProcessingToolApp.Presentations.* | MainWindow、MainWindowViewModel、SubViewModels、ProcessStateManager、SignalExecutionRequestFactory、ConfigFactory                                                                                                        | Application  |
-| Application  | SignalProcessingToolApp.Applications.*  | SignalProcessingSession、SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、SignalExecutionRequest、SignalProcessingConfig、GainConfig、DelayConfig、CommonConfig、SineWaveConfig、ParameterFactory | Domain       |
-| Domain       | SignalProcessingToolApp.Domains.*       | SineWaveGenerator、UnitImpulseGenerator、GainProcessor、DelayProcessor、SineWaveParameter、CommonParameter、DelayParameter                                                                                                | なし（他層に依存しない） |
+| Presentation | SignalProcessingToolApp.Presentations.* | MainWindow、MainWindowViewModel、SubViewModels、ProcessStateManager、SignalExecutionSettingsFactory、ConfigFactory                                                                                                        | Application  |
+| Application  | SignalProcessingToolApp.Applications.*  | SignalProcessingService、SignalProcessingChain、WaveformGenerator、SignalProcessor、FrameProcessor、SignalExecutionSettings、SignalProcessingConfig、GainConfig、DelayConfig、IirConfig、CommonConfig、SineWaveConfig、ParameterFactory、FilterCoefficientsDto | Domain       |
+| Domain       | SignalProcessingToolApp.Domains.*       | SineWaveGenerator、UnitImpulseGenerator、GainProcessor、DelayProcessor、IirProcessor、FilterDesigner、FilterType、SineWaveParameter、CommonParameter、DelayParameter、IirParameter | なし（他層に依存しない） |
 
 - 依存方向は Presentation → Application → Domain の一方向とする
 - App.xaml.cs（コンポジションルート）は全層を参照してDI登録のみを行う
-- SignalProcessor は SignalProcessingPipeline が処理単位で生成・保持し、SignalProcessor が GainProcessor と DelayProcessor を内部生成する
+SignalProcessor が GainProcessor、DelayProcessor、IirProcessor を内部生成する
 
 ```mermaid
 classDiagram
@@ -199,20 +223,21 @@ classDiagram
         class InputSignalViewModel
         class CommonParameterViewModel
         class PlotViewModel
-        class SignalExecutionRequestFactory
+        class SignalExecutionSettingsFactory
         class ConfigFactory
     }
     namespace Application {
-        class SignalProcessingSession
-        class SignalProcessingPipeline
+        class SignalProcessingService
+        class SignalProcessingChain
         class WaveformGenerator
         class SignalProcessor
         class FrameProcessor
         class WaveformType
-        class SignalExecutionRequest
+        class SignalExecutionSettings
         class SignalProcessingConfig
         class GainConfig
         class DelayConfig
+        class IirConfig
         class CommonConfig
         class SineWaveConfig
         class ParameterFactory
@@ -225,6 +250,10 @@ classDiagram
         class CommonParameter
         class DelayProcessor
         class DelayParameter
+        class IirProcessor
+        class IirParameter
+        class FilterDesigner
+        class FilterType
     }
 
     MainWindow --> MainWindowViewModel : DataContext
@@ -233,27 +262,29 @@ classDiagram
     MainWindowViewModel *-- CommonParameterViewModel
     MainWindowViewModel *-- PlotViewModel
     MainWindowViewModel *-- ProcessStateManager
-    MainWindowViewModel --> SignalExecutionRequestFactory
-    SignalExecutionRequestFactory --> ConfigFactory
+    MainWindowViewModel --> SignalExecutionSettingsFactory
+    SignalExecutionSettingsFactory --> ConfigFactory
     ConfigFactory --> CommonParameterViewModel : reads
     ConfigFactory --> InputSignalViewModel : reads
     ConfigFactory --> SignalProcessingViewModel : reads
-    MainWindowViewModel --> SignalProcessingSession
-    SignalExecutionRequestFactory ..> SignalExecutionRequest : creates
+    MainWindowViewModel --> SignalProcessingService
+    SignalExecutionSettingsFactory ..> SignalExecutionSettings : creates
     ConfigFactory ..> CommonConfig : creates
     ConfigFactory ..> SineWaveConfig : creates
     ConfigFactory ..> SignalProcessingConfig : creates
     ConfigFactory ..> GainConfig : creates
     ConfigFactory ..> DelayConfig : creates
-    SignalProcessingSession --> SignalProcessingPipeline
-    SignalProcessingSession --> ParameterFactory
+    ConfigFactory ..> IirConfig : creates
+    ConfigFactory ..> FilterType : uses
+    SignalProcessingService --> SignalProcessingChain
+    SignalProcessingService --> ParameterFactory
     ParameterFactory ..> CommonParameter : creates
     ParameterFactory ..> SineWaveParameter : creates
     ParameterFactory ..> DelayParameter : creates
-    SignalProcessingSession ..> SignalExecutionRequest
-    SignalProcessingPipeline --> WaveformGenerator
-    SignalProcessingPipeline ..> SignalProcessor : creates per processing unit
-    SignalProcessingPipeline --> FrameProcessor
+    SignalProcessingService ..> SignalExecutionSettings
+    SignalProcessingChain --> WaveformGenerator
+    SignalProcessingChain ..> SignalProcessor : creates per processing unit
+    SignalProcessingChain --> FrameProcessor
     WaveformGenerator ..> WaveformType
     WaveformGenerator --> SineWaveGenerator
     WaveformGenerator --> UnitImpulseGenerator
@@ -262,12 +293,24 @@ classDiagram
     SignalProcessor ..> GainConfig
     SignalProcessor ..> DelayParameter : uses
     DelayProcessor ..> DelayParameter
-    SignalExecutionRequest --> SignalProcessingConfig
+    SignalExecutionSettings --> SignalProcessingConfig
     SignalProcessingConfig --> GainConfig
     SignalProcessingConfig --> DelayConfig
-    SignalExecutionRequest --> CommonConfig
-    SignalExecutionRequest --> SineWaveConfig
+    SignalProcessingConfig --> IirConfig
+    SignalProcessor --> IirProcessor
+    ParameterFactory ..> IirParameter : creates
+    ParameterFactory --> FilterDesigner
+    SignalExecutionSettings --> CommonConfig
+    SignalExecutionSettings --> SineWaveConfig
     SineWaveGenerator ..> SineWaveParameter
     SineWaveGenerator ..> CommonParameter
     UnitImpulseGenerator ..> CommonParameter
+    SignalProcessingService ..> FilterCoefficientsDto
+    ParameterFactory ..> FilterCoefficientsDto : creates
+    ParameterFactory ..> FilterType
+    FilterDesigner ..> FilterType
+    FilterDesigner ..> IirParameter : creates
+    IirConfig ..> FilterType
+    SignalProcessor ..> IirParameter : uses
+    IirProcessor ..> IirParameter
 ```

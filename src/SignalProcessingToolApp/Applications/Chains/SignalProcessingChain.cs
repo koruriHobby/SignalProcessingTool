@@ -3,9 +3,9 @@ using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Applications.Pipelines;
+namespace SignalProcessingToolApp.Applications.Chains;
 
-public class SignalProcessingPipeline
+public class SignalProcessingChain
 {
     private readonly WaveformGenerator _waveformGenerator;
     private readonly FrameProcessor _frameProcessor;
@@ -13,7 +13,7 @@ public class SignalProcessingPipeline
 
     public int CurrentStartIndex => _frameProcessor.CurrentStartIndex;
 
-    public SignalProcessingPipeline(
+    public SignalProcessingChain(
         WaveformGenerator waveformGenerator,
         FrameProcessor frameProcessor)
     {
@@ -28,7 +28,8 @@ public class SignalProcessingPipeline
         SineWaveParameter? sineWaveParameter,
         CommonParameter commonParameter,
         GainConfig gainConfig,
-        DelayParameter? delayParameter)
+        DelayParameter? delayParameter,
+        IirParameter? iirParameter = null)
     {
         _waveformGenerator.GenerateWaveform(
                 inputSignal,
@@ -37,7 +38,7 @@ public class SignalProcessingPipeline
                 commonParameter,
                 startIndex: 0);
 
-        var signalProcessor = new SignalProcessor(delayParameter);
+        var signalProcessor = new SignalProcessor(delayParameter, iirParameter);
         signalProcessor.Process(
             inputSignal,
             processedSignal,
@@ -51,7 +52,8 @@ public class SignalProcessingPipeline
         SineWaveParameter? sineWaveParameter,
         CommonParameter commonParameter,
         GainConfig gainConfig,
-        DelayParameter? delayParameter)
+        DelayParameter? delayParameter,
+        IirParameter? iirParameter = null)
     {
         _waveformGenerator.GenerateWaveform(
             inputSignal,
@@ -60,7 +62,7 @@ public class SignalProcessingPipeline
             commonParameter,
             startIndex: _frameProcessor.CurrentStartIndex);
 
-        _signalProcessor ??= new SignalProcessor(delayParameter);
+        _signalProcessor ??= new SignalProcessor(delayParameter, iirParameter);
         _signalProcessor.Process(
             inputSignal,
             processedSignal,

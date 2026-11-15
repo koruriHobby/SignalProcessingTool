@@ -3,7 +3,7 @@
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Applications.Pipelines;
+namespace SignalProcessingToolApp.Applications.Chains;
 
 public enum WaveformType
 {

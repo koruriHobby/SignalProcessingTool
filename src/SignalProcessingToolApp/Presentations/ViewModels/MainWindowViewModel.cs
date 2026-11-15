@@ -2,9 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.DTOs;
-using SignalProcessingToolApp.Applications.Pipelines;
-using SignalProcessingToolApp.Applications.Sessions;
+using SignalProcessingToolApp.Applications.Settings;
+using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.Services;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
@@ -17,9 +17,9 @@ namespace SignalProcessingToolApp.Presentations.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly SignalProcessingSession _session;
+    private readonly SignalProcessingService _session;
     private readonly ProcessStateManager _stateManager = new();
-    private readonly SignalExecutionRequestFactory _requestFactory;
+    private readonly SignalExecutionSettingsFactory _requestFactory;
 
     public CommonParameterViewModel CommonParamVm { get; } = new();
     public InputSignalViewModel WaveformVm { get; } = new();
@@ -35,12 +35,14 @@ public partial class MainWindowViewModel : ObservableObject
     public bool IsBatchProcessEnabled => _stateManager.IsBatchProcessEnabled;
 
     public MainWindowViewModel(
-        SignalProcessingSession session,
-        SignalExecutionRequestFactory requestFactory)
+        SignalProcessingService session,
+        SignalExecutionSettingsFactory requestFactory)
     {
         _session = session;
         _requestFactory = requestFactory;
         _stateManager.PropertyChanged += OnStateManagerPropertyChanged;
+        SignalConfigVm.PropertyChanged += OnSignalConfigPropertyChanged;
+        CommonParamVm.PropertyChanged += OnCommonParameterPropertyChanged;
     }
 
     [RelayCommand]
@@ -84,6 +86,48 @@ public partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(propertyChangedEventArgs.PropertyName);
         BatchProcessCommand.NotifyCanExecuteChanged();
         FrameProcessCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnSignalConfigPropertyChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        if (propertyChangedEventArgs.PropertyName is nameof(SignalProcessingViewModel.FilterTypeIndex)
+            or nameof(SignalProcessingViewModel.CutoffFrequencyText))
+        {
+            UpdateCoefficientDisplay();
+        }
+    }
+
+    private void OnCommonParameterPropertyChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        if (propertyChangedEventArgs.PropertyName == nameof(CommonParameterViewModel.SamplingFrequencyIndex))
+        {
+            UpdateCoefficientDisplay();
+        }
+    }
+
+    private void UpdateCoefficientDisplay()
+    {
+        if (SignalConfigVm.FilterTypeIndex < 0
+            || !double.TryParse(SignalConfigVm.CutoffFrequencyText, out double cutoffFrequency))
+        {
+            SignalConfigVm.ClearCoefficientTexts();
+            return;
+        }
+
+        try
+        {
+            double samplingFrequency = CommonParamVm.SamplingFrequencies[CommonParamVm.SamplingFrequencyIndex];
+            var coefficients = _session.CalculateFilterCoefficients(
+                SignalConfigVm.GetFilterType(),
+                samplingFrequency,
+                cutoffFrequency);
+            SignalConfigVm.UpdateCoefficientTexts(coefficients);
+        }
+        catch (ArgumentException exception)
+        {
+            SignalConfigVm.ClearCoefficientTexts();
+            HandleError(exception);
+        }
     }
 
     private void HandleError(Exception exception)

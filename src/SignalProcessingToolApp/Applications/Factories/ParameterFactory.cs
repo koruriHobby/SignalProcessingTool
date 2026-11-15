@@ -1,6 +1,9 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Domains.Filters;
 using SignalProcessingToolApp.Domains.Parameters;
+using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 
 namespace SignalProcessingToolApp.Applications.Factories;
@@ -33,5 +36,38 @@ public class ParameterFactory
         }
 
         return new DelayParameter(delayConfig.BufferSize, delayConfig.SampleCount);
+    }
+
+    public IirParameter? CreateIirParameter(
+        IirConfig? iirConfig,
+        CommonParameter commonParameter)
+    {
+        if (iirConfig is null || !iirConfig.IsEnabled)
+        {
+            return null;
+        }
+
+        return FilterDesigner.Design(
+            commonParameter.SamplingFrequency,
+            iirConfig.CutoffFrequency,
+            iirConfig.FilterType);
+    }
+
+    public FilterCoefficientsDto CreateFilterCoefficientsDto(
+        FilterType filterType,
+        double samplingFrequency,
+        double cutoffFrequency)
+    {
+        var iirParameter = FilterDesigner.Design(
+            samplingFrequency,
+            cutoffFrequency,
+            filterType);
+
+        return new FilterCoefficientsDto(
+            iirParameter.B0,
+            iirParameter.B1,
+            iirParameter.B2,
+            iirParameter.A1,
+            iirParameter.A2);
     }
 }

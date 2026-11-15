@@ -1,29 +1,29 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Applications.Settings;
 using SignalProcessingToolApp.Applications.Factories;
-using SignalProcessingToolApp.Applications.Pipelines;
-using SignalProcessingToolApp.Applications.Sessions;
+using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.Services;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.Sessions;
+namespace SignalProcessingToolApp.Tests.Applications.Services;
 
-public class SignalProcessingSessionTests
+public class SignalProcessingServiceTests
 {
-    private static SignalProcessingSession CreateSession()
+    private static SignalProcessingService CreateSession()
     {
-        var pipeline = new SignalProcessingPipeline(
+        var pipeline = new SignalProcessingChain(
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
             new FrameProcessor());
 
-        return new SignalProcessingSession(pipeline, new ParameterFactory());
+        return new SignalProcessingService(pipeline, new ParameterFactory());
     }
 
-    private static SignalExecutionRequest CreateRequest(int frameSize, int dataSize)
+    private static SignalExecutionSettings CreateRequest(int frameSize, int dataSize)
     {
-        return new SignalExecutionRequest(
+        return new SignalExecutionSettings(
             WaveformType.UnitImpulse,
             null,
             new CommonConfig(44100.0, frameSize, dataSize),
