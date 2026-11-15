@@ -1,5 +1,6 @@
 using SignalProcessingToolApp.Applications.Configs;
 using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Applications.Factories;
 using SignalProcessingToolApp.Applications.Pipelines;
 using SignalProcessingToolApp.Applications.Sessions;
 using SignalProcessingToolApp.Domains.Parameters;
@@ -17,7 +18,7 @@ public class SignalProcessingSessionTests
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
             new FrameProcessor());
 
-        return new SignalProcessingSession(pipeline);
+        return new SignalProcessingSession(pipeline, new ParameterFactory());
     }
 
     private static SignalExecutionRequest CreateRequest(int frameSize, int dataSize)
@@ -25,7 +26,7 @@ public class SignalProcessingSessionTests
         return new SignalExecutionRequest(
             WaveformType.UnitImpulse,
             null,
-            new CommonParameter(44100.0, frameSize, dataSize),
+            new CommonConfig(44100.0, frameSize, dataSize),
             new SignalProcessingConfig(new GainConfig(false, 0.0)));
     }
 

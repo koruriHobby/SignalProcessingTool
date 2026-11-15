@@ -1,5 +1,6 @@
 using SignalProcessingToolApp.Applications.Configs;
 using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class SignalProcessorTests
         double[] input = { 1.0, 2.0, 3.0 };
         var output = new double[3];
 
-        processor.Process(input, output, new SignalProcessingConfig(new GainConfig(false, -20.0)));
+        processor.Process(input, output, new GainConfig(false, -20.0));
 
         Assert.Equal(input, output);
     }
@@ -26,7 +27,7 @@ public class SignalProcessorTests
         double[] input = { 1.0, 2.0 };
         var output = new double[2];
 
-        processor.Process(input, output, new SignalProcessingConfig(new GainConfig(true, -20.0)));
+        processor.Process(input, output, new GainConfig(true, -20.0));
 
         Assert.Equal(0.1, output[0], 10);
         Assert.Equal(0.2, output[1], 10);
@@ -35,11 +36,11 @@ public class SignalProcessorTests
     [Fact]
     public void Process_WhenDelayEnabled_DelaysInput()
     {
-        var processor = new SignalProcessor(new DelayConfig(true, 4, 2));
+        var processor = new SignalProcessor(new DelayParameter(4, 2));
         double[] input = { 1.0, 2.0, 3.0, 4.0 };
         var output = new double[4];
 
-        processor.Process(input, output, new SignalProcessingConfig(new GainConfig(false, 0.0), new DelayConfig(true, 4, 2)));
+        processor.Process(input, output, new GainConfig(false, 0.0));
 
         Assert.Equal(new double[] { 0.0, 0.0, 1.0, 2.0 }, output);
     }
@@ -47,11 +48,11 @@ public class SignalProcessorTests
     [Fact]
     public void Process_WhenDelayAndGainEnabled_AppliesGainBeforeDelay()
     {
-        var processor = new SignalProcessor(new DelayConfig(true, 4, 1));
+        var processor = new SignalProcessor(new DelayParameter(4, 1));
         double[] input = { 1.0, 2.0, 3.0 };
         var output = new double[3];
 
-        processor.Process(input, output, new SignalProcessingConfig(new GainConfig(true, -20.0), new DelayConfig(true, 4, 1)));
+        processor.Process(input, output, new GainConfig(true, -20.0));
 
         Assert.Equal(0.0, output[0], 10);
         Assert.Equal(0.1, output[1], 10);

@@ -13,22 +13,22 @@ public class SignalProcessor
     private double[] _gainBuffer = Array.Empty<double>();
     private double[] _delayBuffer = Array.Empty<double>();
 
-    public SignalProcessor(DelayConfig? delayConfig)
+    public SignalProcessor(DelayParameter? delayParameter)
     {
-        if (delayConfig is { IsEnabled: true })
+        if (delayParameter is not null)
         {
-            _delayProcessor = new DelayProcessor(new DelayParameter(delayConfig.BufferSize, delayConfig.SampleCount));
+            _delayProcessor = new DelayProcessor(delayParameter);
         }
     }
 
     public void Process(
         ReadOnlySpan<double> input,
         Span<double> output,
-        SignalProcessingConfig processingConfig)
+        GainConfig gainConfig)
     {
         ReadOnlySpan<double> source = input;
 
-        if (processingConfig.GainConfig.IsEnabled)
+        if (gainConfig.IsEnabled)
         {
             EnsureBufferLength(ref _gainBuffer, input.Length);
             Span<double> gainOutput = _gainBuffer.AsSpan(0, input.Length);
@@ -36,18 +36,13 @@ public class SignalProcessor
             _gainProcessor.Apply(
                 source,
                 gainOutput,
-                processingConfig.GainConfig.GainDb);
+                gainConfig.GainDb);
 
             source = gainOutput;
         }
 
-        if (processingConfig.DelayConfig is { IsEnabled: true })
+        if (_delayProcessor is not null)
         {
-            if (_delayProcessor is null)
-            {
-                throw new InvalidOperationException("ディレイが有効ですが、ディレイ設定なしでSignalProcessorが生成されています。");
-            }
-
             EnsureBufferLength(ref _delayBuffer, input.Length);
             Span<double> delayOutput = _delayBuffer.AsSpan(0, input.Length);
 

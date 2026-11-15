@@ -25,7 +25,7 @@ public class SignalProcessingPipelineTests
         var commonParameter = new CommonParameter(44100.0, 4, 4);
         var processingConfig = new SignalProcessingConfig(new GainConfig(false, 0.0));
 
-        pipeline.ExecuteBatch(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig);
+        pipeline.ExecuteBatch(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig.GainConfig, null);
 
         Assert.Equal(new double[] { 1.0, 0.0, 0.0, 0.0 }, input);
         Assert.Equal(input, processed);
@@ -40,7 +40,7 @@ public class SignalProcessingPipelineTests
         var commonParameter = new CommonParameter(44100.0, 2, 4);
         var processingConfig = new SignalProcessingConfig(new GainConfig(false, 0.0));
 
-        pipeline.ExecuteFrame(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig);
+        pipeline.ExecuteFrame(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig.GainConfig, null);
 
         Assert.Equal(2, pipeline.CurrentStartIndex);
         Assert.True(pipeline.HasNextFrame(commonParameter));
@@ -54,7 +54,7 @@ public class SignalProcessingPipelineTests
         var processed = new double[2];
         var commonParameter = new CommonParameter(44100.0, 2, 4);
         var processingConfig = new SignalProcessingConfig(new GainConfig(false, 0.0));
-        pipeline.ExecuteFrame(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig);
+        pipeline.ExecuteFrame(input, processed, WaveformType.UnitImpulse, null, commonParameter, processingConfig.GainConfig, null);
 
         pipeline.Reset();
 
