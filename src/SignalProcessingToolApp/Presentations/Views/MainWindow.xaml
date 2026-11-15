@@ -62,7 +62,7 @@
 
     <Grid Background="White">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="360"/>
+            <ColumnDefinition Width="400"/>
             <ColumnDefinition Width="350"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -75,7 +75,7 @@
                     <TextBlock Text="共通パラメータ" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" SharedSizeGroup="ParamLabel"/>
+                            <ColumnDefinition Width="240" SharedSizeGroup="ParamLabel"/>
                             <ColumnDefinition Width="120"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -111,7 +111,7 @@
                     <TextBlock Text="入力信号" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="120"/>
                             <ColumnDefinition Width="240"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -127,7 +127,7 @@
                         <!-- 0行1列：正弦波周波数パラメータ -->
                         <Grid Grid.Row="0" Grid.Column="1" IsEnabled="{Binding WaveformVm.IsWaveformSineWave}" HorizontalAlignment="Right">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="120"/>
                                 <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
 
@@ -184,11 +184,66 @@
                             <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SignalConfigVm.DelayBufferSizeText}"/>
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="ディレイサンプル数 [Sample]:"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SignalConfigVm.DelaySampleCountText}"/>
-                        </Grid>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SignalConfigVm.DelaySampleCountText}"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <CheckBox Content="2次IIRフィルタを適用" IsChecked="{Binding SignalConfigVm.IsIirFilterEnabled}" VerticalAlignment="Center" Margin="0,0,0,5"/>
+
+                                        <Grid IsEnabled="{Binding SignalConfigVm.IsIirFilterEnabled}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" SharedSizeGroup="ParamLabel"/>
+                                                <ColumnDefinition Width="120"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="フィルタタイプ:"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="1"
+                                                      Style="{StaticResource ChangingColorComboxStyle}"
+                                                      ItemsSource="{Binding SignalConfigVm.FilterTypes}"
+                                                      SelectedIndex="{Binding SignalConfigVm.FilterTypeIndex}"/>
+
+                                            <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,5,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="240"/>
+                                                    <ColumnDefinition Width="120"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0" Text="カットオフ周波数 [Hz]:" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Column="1" Text="{Binding SignalConfigVm.CutoffFrequencyText, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SignalConfigVm.IsCutoffFrequencyEnabled}" KeyDown="CutoffFrequencyTextBox_KeyDown"/>
+                                            </Grid>
+
+                                            <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,5,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Margin="0" FontFamily="Consolas" Text="y[n] "/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Margin="0" FontFamily="Consolas" Text="="/>
+                                                <TextBlock Grid.Row="0" Grid.Column="2" Margin="0" FontFamily="Consolas">
+                                                    <Run Text=" "/><Run Text="{Binding SignalConfigVm.B0Text}"/><Run Text=" x[n] + "/><Run Text="{Binding SignalConfigVm.B1Text}"/><Run Text=" x[n-1] + "/><Run Text="{Binding SignalConfigVm.B2Text}"/><Run Text=" x[n-2]"/>
+                                                </TextBlock>
+
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0" FontFamily="Consolas" Text="+"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="2" Margin="0" FontFamily="Consolas">
+                                                    <Run Text=" "/><Run Text="{Binding SignalConfigVm.A1Text}"/><Run Text=" y[n-1] + "/><Run Text="{Binding SignalConfigVm.A2Text}"/><Run Text=" y[n-2]"/>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
         </StackPanel>
 
         <!-- 右列：ボタンとグラフ -->

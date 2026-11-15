@@ -28,7 +28,8 @@ public class SignalProcessingChain
         SineWaveParameter? sineWaveParameter,
         CommonParameter commonParameter,
         GainConfig gainConfig,
-        DelayParameter? delayParameter)
+        DelayParameter? delayParameter,
+        IirParameter? iirParameter = null)
     {
         _waveformGenerator.GenerateWaveform(
                 inputSignal,
@@ -37,7 +38,7 @@ public class SignalProcessingChain
                 commonParameter,
                 startIndex: 0);
 
-        var signalProcessor = new SignalProcessor(delayParameter);
+        var signalProcessor = new SignalProcessor(delayParameter, iirParameter);
         signalProcessor.Process(
             inputSignal,
             processedSignal,
@@ -51,7 +52,8 @@ public class SignalProcessingChain
         SineWaveParameter? sineWaveParameter,
         CommonParameter commonParameter,
         GainConfig gainConfig,
-        DelayParameter? delayParameter)
+        DelayParameter? delayParameter,
+        IirParameter? iirParameter = null)
     {
         _waveformGenerator.GenerateWaveform(
             inputSignal,
@@ -60,7 +62,7 @@ public class SignalProcessingChain
             commonParameter,
             startIndex: _frameProcessor.CurrentStartIndex);
 
-        _signalProcessor ??= new SignalProcessor(delayParameter);
+        _signalProcessor ??= new SignalProcessor(delayParameter, iirParameter);
         _signalProcessor.Process(
             inputSignal,
             processedSignal,

@@ -2,6 +2,8 @@ using SignalProcessingToolApp.Applications.Configs;
 using SignalProcessingToolApp.Applications.Settings;
 using SignalProcessingToolApp.Applications.Factories;
 using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Domains.Filters;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
@@ -34,6 +36,7 @@ public class SignalProcessingService
         var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
         var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
         var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+        var iirParameter = _parameterFactory.CreateIirParameter(request.ProcessingConfig.IirConfig, commonParameter);
 
         var inputBuffer = new double[commonParameter.DataSize];
         var processedBuffer = new double[commonParameter.DataSize];
@@ -45,7 +48,8 @@ public class SignalProcessingService
             sineWaveParameter,
             commonParameter,
             request.ProcessingConfig.GainConfig,
-            delayParameter
+            delayParameter,
+            iirParameter
         );
 
         _pipeline.Reset();
@@ -61,6 +65,7 @@ public class SignalProcessingService
         var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
         var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
         var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+        var iirParameter = _parameterFactory.CreateIirParameter(request.ProcessingConfig.IirConfig, commonParameter);
 
         if (_pipeline.CurrentStartIndex == 0)
         {
@@ -86,7 +91,8 @@ public class SignalProcessingService
             sineWaveParameter,
             commonParameter,
             request.ProcessingConfig.GainConfig,
-            delayParameter
+            delayParameter,
+            iirParameter
         );
 
         int currentLength = _pipeline.CurrentStartIndex;
@@ -105,6 +111,14 @@ public class SignalProcessingService
         }
 
         return (displayInput, displayProcessed, IsCompleted: !hasNext);
+    }
+
+    public FilterCoefficientsDto CalculateFilterCoefficients(
+        FilterType filterType,
+        double samplingFrequency,
+        double cutoffFrequency)
+    {
+        return _parameterFactory.CreateFilterCoefficientsDto(filterType, samplingFrequency, cutoffFrequency);
     }
 
     public void Reset()

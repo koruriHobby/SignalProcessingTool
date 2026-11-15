@@ -41,6 +41,8 @@ public partial class MainWindowViewModel : ObservableObject
         _session = session;
         _requestFactory = requestFactory;
         _stateManager.PropertyChanged += OnStateManagerPropertyChanged;
+        SignalConfigVm.PropertyChanged += OnSignalConfigPropertyChanged;
+        CommonParamVm.PropertyChanged += OnCommonParameterPropertyChanged;
     }
 
     [RelayCommand]
@@ -84,6 +86,48 @@ public partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(propertyChangedEventArgs.PropertyName);
         BatchProcessCommand.NotifyCanExecuteChanged();
         FrameProcessCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnSignalConfigPropertyChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        if (propertyChangedEventArgs.PropertyName is nameof(SignalProcessingViewModel.FilterTypeIndex)
+            or nameof(SignalProcessingViewModel.CutoffFrequencyText))
+        {
+            UpdateCoefficientDisplay();
+        }
+    }
+
+    private void OnCommonParameterPropertyChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        if (propertyChangedEventArgs.PropertyName == nameof(CommonParameterViewModel.SamplingFrequencyIndex))
+        {
+            UpdateCoefficientDisplay();
+        }
+    }
+
+    private void UpdateCoefficientDisplay()
+    {
+        if (SignalConfigVm.FilterTypeIndex < 0
+            || !double.TryParse(SignalConfigVm.CutoffFrequencyText, out double cutoffFrequency))
+        {
+            SignalConfigVm.ClearCoefficientTexts();
+            return;
+        }
+
+        try
+        {
+            double samplingFrequency = CommonParamVm.SamplingFrequencies[CommonParamVm.SamplingFrequencyIndex];
+            var coefficients = _session.CalculateFilterCoefficients(
+                SignalConfigVm.GetFilterType(),
+                samplingFrequency,
+                cutoffFrequency);
+            SignalConfigVm.UpdateCoefficientTexts(coefficients);
+        }
+        catch (ArgumentException exception)
+        {
+            SignalConfigVm.ClearCoefficientTexts();
+            HandleError(exception);
+        }
     }
 
     private void HandleError(Exception exception)
