@@ -7,7 +7,7 @@
 - Microsoft.Extensions.DependencyInjection 11.0.0
 - コンポジションルートは App.xaml.cs（OnStartup で ConfigureServices により登録）
 - Singleton で各 Application/Domain/Presentation サービスを登録し、コンストラクタインジェクションで解決
-- 状態を持つ処理実体（SignalProcessor、GainProcessor、DelayProcessor）は DI に登録せず、SignalProcessingPipeline が処理単位で生成・保持する
+- 状態を持つ処理実体（SignalProcessor、GainProcessor、DelayProcessor）は DI に登録せず、SignalProcessingChain が処理単位で生成・保持する
 ### NuGet
 - commuittyToolkitMVVM
 - XUnit
@@ -24,12 +24,12 @@
 - Views：View（xaml）、code-behind
 - ViewModels：MainWindowViewModel、SubViewModels（InputSignal／CommonParameter／SignalProcessing／Plot）
 - States：AppState、ProcessStateManager（状態遷移・UI有効状態の管理）
-- Factories：SignalExecutionRequestFactory（ConfigFactoryを用いてリクエストを生成）、ConfigFactory（UI値からApplicationのConfigを生成）
+- Factories：SignalExecutionSettingsFactory（ConfigFactoryを用いてリクエストを生成）、ConfigFactory（UI値からApplicationのConfigを生成）
 ### Application（src\SignalProcessingToolApp\Applications）
-- Sessions：SignalProcessingSession（一括・フレーム単位の処理実行、波形蓄積）
-- Pipelines：SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、WaveformType
+- Sessions：SignalProcessingService（一括・フレーム単位の処理実行、波形蓄積）
+- Pipelines：SignalProcessingChain、WaveformGenerator、SignalProcessor、FrameProcessor、WaveformType
 - Configs：SignalProcessingConfig、GainConfig、DelayConfig、CommonConfig、SineWaveConfig
-- DTOs：SignalExecutionRequest（Configのみを保持）
+- DTOs：SignalExecutionSettings（Configのみを保持）
 - Factories：ParameterFactory（ApplicationのConfigからDomainのParameterを生成）
 ### Domain（src\SignalProcessingToolApp\Domains）
 - WaveformGeneration：SineWaveGenerator、UnitImpulseGenerator、SineWaveParameter
@@ -181,13 +181,13 @@ stateDiagram-v2
 ### クリーンアーキテクチャのレイヤ
 | レイヤ          | エリア（namespace）                          | 含むクラス                                                                                                                                                                                                               | 依存先          |
 | ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| Presentation | SignalProcessingToolApp.Presentations.* | MainWindow、MainWindowViewModel、SubViewModels、ProcessStateManager、SignalExecutionRequestFactory、ConfigFactory                                                                                                        | Application  |
-| Application  | SignalProcessingToolApp.Applications.*  | SignalProcessingSession、SignalProcessingPipeline、WaveformGenerator、SignalProcessor、FrameProcessor、SignalExecutionRequest、SignalProcessingConfig、GainConfig、DelayConfig、CommonConfig、SineWaveConfig、ParameterFactory | Domain       |
+| Presentation | SignalProcessingToolApp.Presentations.* | MainWindow、MainWindowViewModel、SubViewModels、ProcessStateManager、SignalExecutionSettingsFactory、ConfigFactory                                                                                                        | Application  |
+| Application  | SignalProcessingToolApp.Applications.*  | SignalProcessingService、SignalProcessingChain、WaveformGenerator、SignalProcessor、FrameProcessor、SignalExecutionSettings、SignalProcessingConfig、GainConfig、DelayConfig、CommonConfig、SineWaveConfig、ParameterFactory | Domain       |
 | Domain       | SignalProcessingToolApp.Domains.*       | SineWaveGenerator、UnitImpulseGenerator、GainProcessor、DelayProcessor、SineWaveParameter、CommonParameter、DelayParameter                                                                                                | なし（他層に依存しない） |
 
 - 依存方向は Presentation → Application → Domain の一方向とする
 - App.xaml.cs（コンポジションルート）は全層を参照してDI登録のみを行う
-- SignalProcessor は SignalProcessingPipeline が処理単位で生成・保持し、SignalProcessor が GainProcessor と DelayProcessor を内部生成する
+- SignalProcessor は SignalProcessingChain が処理単位で生成・保持し、SignalProcessor が GainProcessor と DelayProcessor を内部生成する
 
 ```mermaid
 classDiagram
@@ -199,17 +199,17 @@ classDiagram
         class InputSignalViewModel
         class CommonParameterViewModel
         class PlotViewModel
-        class SignalExecutionRequestFactory
+        class SignalExecutionSettingsFactory
         class ConfigFactory
     }
     namespace Application {
-        class SignalProcessingSession
-        class SignalProcessingPipeline
+        class SignalProcessingService
+        class SignalProcessingChain
         class WaveformGenerator
         class SignalProcessor
         class FrameProcessor
         class WaveformType
-        class SignalExecutionRequest
+        class SignalExecutionSettings
         class SignalProcessingConfig
         class GainConfig
         class DelayConfig
@@ -233,27 +233,27 @@ classDiagram
     MainWindowViewModel *-- CommonParameterViewModel
     MainWindowViewModel *-- PlotViewModel
     MainWindowViewModel *-- ProcessStateManager
-    MainWindowViewModel --> SignalExecutionRequestFactory
-    SignalExecutionRequestFactory --> ConfigFactory
+    MainWindowViewModel --> SignalExecutionSettingsFactory
+    SignalExecutionSettingsFactory --> ConfigFactory
     ConfigFactory --> CommonParameterViewModel : reads
     ConfigFactory --> InputSignalViewModel : reads
     ConfigFactory --> SignalProcessingViewModel : reads
-    MainWindowViewModel --> SignalProcessingSession
-    SignalExecutionRequestFactory ..> SignalExecutionRequest : creates
+    MainWindowViewModel --> SignalProcessingService
+    SignalExecutionSettingsFactory ..> SignalExecutionSettings : creates
     ConfigFactory ..> CommonConfig : creates
     ConfigFactory ..> SineWaveConfig : creates
     ConfigFactory ..> SignalProcessingConfig : creates
     ConfigFactory ..> GainConfig : creates
     ConfigFactory ..> DelayConfig : creates
-    SignalProcessingSession --> SignalProcessingPipeline
-    SignalProcessingSession --> ParameterFactory
+    SignalProcessingService --> SignalProcessingChain
+    SignalProcessingService --> ParameterFactory
     ParameterFactory ..> CommonParameter : creates
     ParameterFactory ..> SineWaveParameter : creates
     ParameterFactory ..> DelayParameter : creates
-    SignalProcessingSession ..> SignalExecutionRequest
-    SignalProcessingPipeline --> WaveformGenerator
-    SignalProcessingPipeline ..> SignalProcessor : creates per processing unit
-    SignalProcessingPipeline --> FrameProcessor
+    SignalProcessingService ..> SignalExecutionSettings
+    SignalProcessingChain --> WaveformGenerator
+    SignalProcessingChain ..> SignalProcessor : creates per processing unit
+    SignalProcessingChain --> FrameProcessor
     WaveformGenerator ..> WaveformType
     WaveformGenerator --> SineWaveGenerator
     WaveformGenerator --> UnitImpulseGenerator
@@ -262,11 +262,11 @@ classDiagram
     SignalProcessor ..> GainConfig
     SignalProcessor ..> DelayParameter : uses
     DelayProcessor ..> DelayParameter
-    SignalExecutionRequest --> SignalProcessingConfig
+    SignalExecutionSettings --> SignalProcessingConfig
     SignalProcessingConfig --> GainConfig
     SignalProcessingConfig --> DelayConfig
-    SignalExecutionRequest --> CommonConfig
-    SignalExecutionRequest --> SineWaveConfig
+    SignalExecutionSettings --> CommonConfig
+    SignalExecutionSettings --> SineWaveConfig
     SineWaveGenerator ..> SineWaveParameter
     SineWaveGenerator ..> CommonParameter
     UnitImpulseGenerator ..> CommonParameter

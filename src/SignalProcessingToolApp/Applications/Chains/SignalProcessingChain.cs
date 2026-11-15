@@ -3,9 +3,9 @@ using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 
-namespace SignalProcessingToolApp.Applications.Pipelines;
+namespace SignalProcessingToolApp.Applications.Chains;
 
-public class SignalProcessingPipeline
+public class SignalProcessingChain
 {
     private readonly WaveformGenerator _waveformGenerator;
     private readonly FrameProcessor _frameProcessor;
@@ -13,7 +13,7 @@ public class SignalProcessingPipeline
 
     public int CurrentStartIndex => _frameProcessor.CurrentStartIndex;
 
-    public SignalProcessingPipeline(
+    public SignalProcessingChain(
         WaveformGenerator waveformGenerator,
         FrameProcessor frameProcessor)
     {

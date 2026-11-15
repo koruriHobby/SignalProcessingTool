@@ -1,11 +1,11 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.DTOs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Settings;
+using SignalProcessingToolApp.Applications.Chains;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.DTOs;
+namespace SignalProcessingToolApp.Tests.Applications.Settings;
 
-public class SignalExecutionRequestTests
+public class SignalExecutionSettingsTests
 {
     [Fact]
     public void Constructor_SetsProperties()
@@ -14,7 +14,7 @@ public class SignalExecutionRequestTests
         var commonConfig = new CommonConfig(44100.0, 8, 16);
         var processingConfig = new SignalProcessingConfig(new GainConfig(false, 0.0));
 
-        var request = new SignalExecutionRequest(
+        var request = new SignalExecutionSettings(
             WaveformType.SineWave,
             sineWaveConfig,
             commonConfig,

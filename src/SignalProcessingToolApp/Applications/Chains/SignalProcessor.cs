@@ -4,7 +4,7 @@ using SignalProcessingToolApp.Applications.Configs;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 
-namespace SignalProcessingToolApp.Applications.Pipelines;
+namespace SignalProcessingToolApp.Applications.Chains;
 
 public class SignalProcessor
 {

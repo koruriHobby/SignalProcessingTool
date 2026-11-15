@@ -1,7 +1,7 @@
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.Pipelines;
+namespace SignalProcessingToolApp.Tests.Applications.Chains;
 
 public class FrameProcessorTests
 {

@@ -1,5 +1,5 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 

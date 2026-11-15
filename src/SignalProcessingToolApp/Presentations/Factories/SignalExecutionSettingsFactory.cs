@@ -1,21 +1,21 @@
-using SignalProcessingToolApp.Applications.DTOs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Settings;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Presentations.ViewModels;
 
 namespace SignalProcessingToolApp.Presentations.Factories;
 
-public class SignalExecutionRequestFactory
+public class SignalExecutionSettingsFactory
 {
     private const int SineWaveIndex = 0;
 
     private readonly ConfigFactory _configFactory;
 
-    public SignalExecutionRequestFactory(ConfigFactory configFactory)
+    public SignalExecutionSettingsFactory(ConfigFactory configFactory)
     {
         _configFactory = configFactory ?? throw new ArgumentNullException(nameof(configFactory));
     }
 
-    public SignalExecutionRequest Create(
+    public SignalExecutionSettings Create(
         CommonParameterViewModel commonParameterViewModel,
         InputSignalViewModel inputSignalViewModel,
         SignalProcessingViewModel signalProcessingViewModel)
@@ -27,7 +27,7 @@ public class SignalExecutionRequestFactory
             : null;
         var processingConfig = _configFactory.CreateSignalProcessingConfig(signalProcessingViewModel);
 
-        return new SignalExecutionRequest(
+        return new SignalExecutionSettings(
             waveformType,
             sineWaveConfig,
             commonConfig,

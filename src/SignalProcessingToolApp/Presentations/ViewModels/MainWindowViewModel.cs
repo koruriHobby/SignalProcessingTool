@@ -2,9 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.DTOs;
-using SignalProcessingToolApp.Applications.Pipelines;
-using SignalProcessingToolApp.Applications.Sessions;
+using SignalProcessingToolApp.Applications.Settings;
+using SignalProcessingToolApp.Applications.Chains;
+using SignalProcessingToolApp.Applications.Services;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
@@ -17,9 +17,9 @@ namespace SignalProcessingToolApp.Presentations.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly SignalProcessingSession _session;
+    private readonly SignalProcessingService _session;
     private readonly ProcessStateManager _stateManager = new();
-    private readonly SignalExecutionRequestFactory _requestFactory;
+    private readonly SignalExecutionSettingsFactory _requestFactory;
 
     public CommonParameterViewModel CommonParamVm { get; } = new();
     public InputSignalViewModel WaveformVm { get; } = new();
@@ -35,8 +35,8 @@ public partial class MainWindowViewModel : ObservableObject
     public bool IsBatchProcessEnabled => _stateManager.IsBatchProcessEnabled;
 
     public MainWindowViewModel(
-        SignalProcessingSession session,
-        SignalExecutionRequestFactory requestFactory)
+        SignalProcessingService session,
+        SignalExecutionSettingsFactory requestFactory)
     {
         _session = session;
         _requestFactory = requestFactory;

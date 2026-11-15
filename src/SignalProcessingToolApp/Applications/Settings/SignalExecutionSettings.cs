@@ -1,9 +1,9 @@
-﻿using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Applications.Chains;
 
-namespace SignalProcessingToolApp.Applications.DTOs;
+namespace SignalProcessingToolApp.Applications.Settings;
 
-public record SignalExecutionRequest(
+public record SignalExecutionSettings(
     WaveformType WaveformType,
     SineWaveConfig? SineWaveConfig,
     CommonConfig CommonConfig,

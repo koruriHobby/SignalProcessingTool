@@ -1,4 +1,4 @@
-namespace SignalProcessingToolApp.Applications.Pipelines;
+namespace SignalProcessingToolApp.Applications.Chains;
 
 public class FrameProcessor
 {

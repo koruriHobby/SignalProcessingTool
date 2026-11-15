@@ -1,17 +1,17 @@
 using SignalProcessingToolApp.Applications.Configs;
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.Pipelines;
+namespace SignalProcessingToolApp.Tests.Applications.Chains;
 
-public class SignalProcessingPipelineTests
+public class SignalProcessingChainTests
 {
-    private static SignalProcessingPipeline CreatePipeline()
+    private static SignalProcessingChain CreatePipeline()
     {
-        return new SignalProcessingPipeline(
+        return new SignalProcessingChain(
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
             new FrameProcessor());
     }

@@ -1,9 +1,9 @@
-using SignalProcessingToolApp.Applications.Pipelines;
+using SignalProcessingToolApp.Applications.Chains;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.WaveformGeneration;
 using Xunit;
 
-namespace SignalProcessingToolApp.Tests.Applications.Pipelines;
+namespace SignalProcessingToolApp.Tests.Applications.Chains;
 
 public class WaveformGeneratorTests
 {

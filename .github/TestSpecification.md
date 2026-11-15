@@ -23,7 +23,7 @@
 
 ### 1.2 DTOs
 
-#### SignalExecutionRequestTests
+#### SignalExecutionSettingsTests
 
 | テストメソッド | 観点 | 前提条件 | 期待結果 |
 |---|---|---|---|
@@ -57,7 +57,7 @@
 | GenerateWaveform_SineWaveWithNullParameter_ThrowsArgumentNullException | 異常系 | 正弦波指定かつパラメータ `null` | `ArgumentNullException` がスローされる |
 | GenerateWaveform_InvalidWaveformType_ThrowsArgumentException | 異常系 | 定義外の `WaveformType` 値 | `ArgumentException` がスローされる |
 
-#### SignalProcessingPipelineTests
+#### SignalProcessingChainTests
 
 | テストメソッド | 観点 | 前提条件 | 期待結果 |
 |---|---|---|---|
@@ -67,7 +67,7 @@
 
 ### 1.4 Sessions
 
-#### SignalProcessingSessionTests
+#### SignalProcessingServiceTests
 
 | テストメソッド | 観点 | 前提条件 | 期待結果 |
 |---|---|---|---|
@@ -134,7 +134,7 @@
 
 ### 3.1 Factories
 
-#### SignalExecutionRequestFactoryTests
+#### SignalExecutionSettingsFactoryTests
 
 | テストメソッド | 観点 | 前提条件 | 期待結果 |
 |---|---|---|---|
