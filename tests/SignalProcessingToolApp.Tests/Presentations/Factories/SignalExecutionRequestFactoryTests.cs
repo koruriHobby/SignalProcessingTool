@@ -10,7 +10,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDefaultSineWaveViewModels_CreatesSineWaveRequest()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -18,18 +18,18 @@ public class SignalExecutionRequestFactoryTests
         var request = factory.Create(commonParameterVm, inputSignalVm, signalProcessingVm);
 
         Assert.Equal(WaveformType.SineWave, request.WaveformType);
-        Assert.Equal(44100.0, request.CommonParameter.SamplingFrequency);
-        Assert.Equal(8, request.CommonParameter.FrameSize);
-        Assert.Equal(32, request.CommonParameter.DataSize);
-        Assert.NotNull(request.SineWaveParameter);
-        Assert.Equal(1000.0, request.SineWaveParameter!.Frequency);
+        Assert.Equal(44100.0, request.CommonConfig.SamplingFrequency);
+        Assert.Equal(8, request.CommonConfig.FrameSize);
+        Assert.Equal(32, request.CommonConfig.DataSize);
+        Assert.NotNull(request.SineWaveConfig);
+        Assert.Equal(1000.0, request.SineWaveConfig!.Frequency);
         Assert.False(request.ProcessingConfig.GainConfig.IsEnabled);
     }
 
     [Fact]
-    public void Create_WithImpulseViewModel_CreatesUnitImpulseRequestWithoutSineWaveParameter()
+    public void Create_WithImpulseViewModel_CreatesUnitImpulseRequestWithoutSineWaveConfig()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel { WaveformTypeIndex = 1 };
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -37,13 +37,13 @@ public class SignalExecutionRequestFactoryTests
         var request = factory.Create(commonParameterVm, inputSignalVm, signalProcessingVm);
 
         Assert.Equal(WaveformType.UnitImpulse, request.WaveformType);
-        Assert.Null(request.SineWaveParameter);
+        Assert.Null(request.SineWaveConfig);
     }
 
     [Fact]
     public void Create_WithGainEnabled_CreatesGainConfigFromSelectedValue()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel { IsGainEnabled = true, GainIndex = 2 };
@@ -57,7 +57,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayDisabled_CreatesDisabledDelayConfig()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel();
@@ -71,7 +71,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayEnabled_CreatesDelayConfigFromInputText()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel
@@ -91,7 +91,7 @@ public class SignalExecutionRequestFactoryTests
     [Fact]
     public void Create_WithDelayEnabledAndNonIntegerText_ThrowsFormatException()
     {
-        var factory = new SignalExecutionRequestFactory();
+        var factory = new SignalExecutionRequestFactory(new ConfigFactory());
         var commonParameterVm = new CommonParameterViewModel();
         var inputSignalVm = new InputSignalViewModel();
         var signalProcessingVm = new SignalProcessingViewModel

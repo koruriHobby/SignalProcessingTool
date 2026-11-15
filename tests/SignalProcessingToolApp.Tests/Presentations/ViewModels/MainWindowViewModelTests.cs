@@ -1,4 +1,5 @@
 using SignalProcessingToolApp.Applications.Configs;
+using SignalProcessingToolApp.Applications.Factories;
 using SignalProcessingToolApp.Applications.Pipelines;
 using SignalProcessingToolApp.Applications.Sessions;
 using SignalProcessingToolApp.Domains.SignalProcessing;
@@ -17,7 +18,9 @@ public class MainWindowViewModelTests
             new WaveformGenerator(new SineWaveGenerator(), new UnitImpulseGenerator()),
             new FrameProcessor());
 
-        return new MainWindowViewModel(new SignalProcessingSession(pipeline), new SignalExecutionRequestFactory());
+        var requestFactory = new SignalExecutionRequestFactory(new ConfigFactory());
+
+        return new MainWindowViewModel(new SignalProcessingSession(pipeline, new ParameterFactory()), requestFactory);
     }
 
     [Fact]

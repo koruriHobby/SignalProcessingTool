@@ -2,6 +2,7 @@
 using System.Data;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using SignalProcessingToolApp.Applications.Factories;
 using SignalProcessingToolApp.Applications.Pipelines;
 using SignalProcessingToolApp.Applications.Sessions;
 using SignalProcessingToolApp.Domains.SignalProcessing;
@@ -45,6 +46,8 @@ namespace SignalProcessingToolApp
             services.AddSingleton<FrameProcessor>();
             services.AddSingleton<SignalProcessingPipeline>();
             services.AddSingleton<SignalProcessingSession>();
+            services.AddSingleton<ParameterFactory>();
+            services.AddSingleton<ConfigFactory>();
             services.AddSingleton<SignalExecutionRequestFactory>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<MainWindow>();

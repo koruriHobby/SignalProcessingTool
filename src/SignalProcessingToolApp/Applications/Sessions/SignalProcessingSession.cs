@@ -1,5 +1,6 @@
 ﻿using SignalProcessingToolApp.Applications.Configs;
 using SignalProcessingToolApp.Applications.DTOs;
+using SignalProcessingToolApp.Applications.Factories;
 using SignalProcessingToolApp.Applications.Pipelines;
 using SignalProcessingToolApp.Domains.Parameters;
 using SignalProcessingToolApp.Domains.SignalProcessing;
@@ -10,15 +11,19 @@ namespace SignalProcessingToolApp.Applications.Sessions;
 public class SignalProcessingSession
 {
     private readonly SignalProcessingPipeline _pipeline;
+    private readonly ParameterFactory _parameterFactory;
 
     private double[]? _accumulatedInputWaveform;
     private double[]? _accumulatedProcessedWaveform;
 
     public bool IsInitialized => _accumulatedInputWaveform != null && _accumulatedProcessedWaveform != null;
 
-    public SignalProcessingSession(SignalProcessingPipeline pipeline)
+    public SignalProcessingSession(
+        SignalProcessingPipeline pipeline,
+        ParameterFactory parameterFactory)
     {
         _pipeline = pipeline;
+        _parameterFactory = parameterFactory ?? throw new ArgumentNullException(nameof(parameterFactory));
     }
 
     /// <summary>
@@ -26,16 +31,21 @@ public class SignalProcessingSession
     /// </summary>
     public (double[] Input, double[] Processed) ExecuteBatch(SignalExecutionRequest request)
     {
-        var inputBuffer = new double[request.CommonParameter.DataSize];
-        var processedBuffer = new double[request.CommonParameter.DataSize];
+        var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
+        var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
+        var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+
+        var inputBuffer = new double[commonParameter.DataSize];
+        var processedBuffer = new double[commonParameter.DataSize];
 
         _pipeline.ExecuteBatch(
             inputBuffer,
             processedBuffer,
             request.WaveformType,
-            request.SineWaveParameter,
-            request.CommonParameter,
-            request.ProcessingConfig
+            sineWaveParameter,
+            commonParameter,
+            request.ProcessingConfig.GainConfig,
+            delayParameter
         );
 
         _pipeline.Reset();
@@ -48,11 +58,15 @@ public class SignalProcessingSession
     /// </summary>
     public (double[] DisplayInput, double[] DisplayProcessed, bool IsCompleted) ExecuteNextFrame(SignalExecutionRequest request)
     {
+        var commonParameter = _parameterFactory.CreateCommonParameter(request.CommonConfig);
+        var sineWaveParameter = _parameterFactory.CreateSineWaveParameter(request.WaveformType, request.SineWaveConfig, commonParameter);
+        var delayParameter = _parameterFactory.CreateDelayParameter(request.ProcessingConfig.DelayConfig);
+
         if (_pipeline.CurrentStartIndex == 0)
         {
             // 初期化
-            _accumulatedInputWaveform = new double[request.CommonParameter.DataSize];
-            _accumulatedProcessedWaveform = new double[request.CommonParameter.DataSize];
+            _accumulatedInputWaveform = new double[commonParameter.DataSize];
+            _accumulatedProcessedWaveform = new double[commonParameter.DataSize];
             _pipeline.Reset();
         }
 
@@ -60,7 +74,7 @@ public class SignalProcessingSession
         var accumulatedProcessed = _accumulatedProcessedWaveform ?? throw new InvalidOperationException("処理後蓄積配列が初期化されていません。");
 
         int currentIndex = _pipeline.CurrentStartIndex;
-        int frameSize = request.CommonParameter.FrameSize;
+        int frameSize = commonParameter.FrameSize;
 
         Span<double> inputFrameSpan = accumulatedInput.AsSpan(currentIndex, frameSize);
         Span<double> processedFrameSpan = accumulatedProcessed.AsSpan(currentIndex, frameSize);
@@ -69,9 +83,10 @@ public class SignalProcessingSession
             inputFrameSpan,
             processedFrameSpan,
             request.WaveformType,
-            request.SineWaveParameter,
-            request.CommonParameter,
-            request.ProcessingConfig
+            sineWaveParameter,
+            commonParameter,
+            request.ProcessingConfig.GainConfig,
+            delayParameter
         );
 
         int currentLength = _pipeline.CurrentStartIndex;
@@ -83,7 +98,7 @@ public class SignalProcessingSession
         Array.Copy(accumulatedInput, 0, displayInput, 0, currentLength);
         Array.Copy(accumulatedProcessed, 0, displayProcessed, 0, currentLength);
 
-        bool hasNext = _pipeline.HasNextFrame(request.CommonParameter);
+        bool hasNext = _pipeline.HasNextFrame(commonParameter);
         if (!hasNext)
         {
             _pipeline.Reset();
